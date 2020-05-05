@@ -85,7 +85,7 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     # make the lists of the axes that have a correspondence (and therefore define the intervals)
     longP1 = sulciP1[0][long_corr[:, 0]]
     latP1 = sulciP1[1][lat_corr[:, 0]]
-    longP2 = sulciP1[0][long_corr[:, 1]]
+    longP2 = sulciP2[0][long_corr[:, 1]]
     latP2 = sulciP2[1][lat_corr[:, 1]]
 
     # the transformation on the first interval is linear
