@@ -15,7 +15,7 @@ def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
     :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
     :param sulciP2: same thing as sulciP2 for Primate2
-    :param dim_sphere: the dimensions of the sphere without the poles' intervalles.
+    :param lat_sphere: the interval for the latitudes of the sphere without the poles.
     :return: a tuple of four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
     sulci for Primate1 and the coordinates of the longitudinal and the latitudinal sulci for Primate2, on the sphere.
     """
@@ -43,7 +43,7 @@ def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
         longS_P1[i] += (sulciP1[0][i] < 0) * 360
 
     for i in range(Nlat_P1):
-        if (sulciP1[1][i] > lat_min and sulciP1[1][i] < lat_max):
+        if lat_min < sulciP1[1][i] < lat_max:
             latS_P1[i] *= range_lat / lP1
             latS_P1[i] += 30
 
@@ -52,11 +52,11 @@ def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
         longS_P2[i] += (sulciP2[0][i] < 0) * 360
 
     for i in range(Nlat_P2):
-        if (sulciP2[1][i] > lat_min and sulciP2[1][i] < lat_max):
+        if lat_min < sulciP2[1][i] < lat_max:
             latS_P2[i] *= range_lat / lP2
             latS_P2[i] += 30
 
-    return (longS_P1, latS_P1, longS_P2, latS_P2)
+    return longS_P1, latS_P1, longS_P2, latS_P2
 
 
 def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
