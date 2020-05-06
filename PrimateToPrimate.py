@@ -10,7 +10,7 @@ def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
     surface), given the respective dimensions of the rectangles of each species and the wanted dimensions of the sphere
     (which might be different from ([0,360]*[0,180]) as we do not take into account the intervalles where the poles are
     on the latitudes: with the default value, below 30° and above 150° are respectively the insular and cingular poles).
-    :param dimP1: the dimensions of the rectangle for the Primate1 ('[Longitude,latitude]')
+    :param dimP1: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
     :param dimP2: same thing as dimP1 for Primate2
     :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
@@ -119,16 +119,20 @@ def rescale(sulci, affine, intervals):
     assert (len(affine) == len(intervals) + 1), "The lengths of the affine transformations and the intervals " \
                                                 "do not match."
 
-    new_intervals = np.concatenate([0], intervals, [360]) # we add the boundaries to the list of coordinates
-    N = len(sulci)
-    rescaled = np.zeros(N)
+    new_intervals = np.concatenate([0], intervals) # we add the lower boundary to the list of coordinates
+    N = len(sulci) # there are now N sulci, N+1 'new_intervals', and N+1 affine transformations
+    rescaled = np.zeros(N) # initialize the list
     i = 0
     j = 0
-    while i < N:
+    while i < N: # first N intervals
         while (sulci[j] >= new_intervals[i]) and (sulci[j] < new_intervals[i+1]):
             rescaled[j] *= affine[i][0]
             rescaled[j] += affine[i][1]
             j += 1
         i += 1
+    for l in range(j,N): # last interval
+        rescaled[l] *= affine[N][0]
+        rescaled[l] += affine[N][1]
+
     return rescaled
 
