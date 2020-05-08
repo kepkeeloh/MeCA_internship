@@ -1,7 +1,0 @@
-attributes = {
-    'data_type' : 'VOID',
-    'file_type' : 'MESH',
-    'polygon_dimension' : 3,
-    'referential' : '2557b8a5-5b90-7c05-7b57-da16fd656b0c',
-    'vertex_number' : 21129
-  }
