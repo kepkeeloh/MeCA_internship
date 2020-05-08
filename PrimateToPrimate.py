@@ -1,7 +1,7 @@
 import numpy as np
 from soma import aims
 import sys
-import read_file
+import read_file.py
 
 
 def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
