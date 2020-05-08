@@ -1,6 +1,7 @@
 import numpy as np
 from soma import aims
 import sys
+import read_file
 
 
 def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
@@ -12,11 +13,11 @@ def SquareToSphere(dimP1, dimP2, sulciP1, sulciP2, lat_sphere=[30., 150.]):
     on the latitudes: with the default value, below 30° and above 150° are respectively the insular and cingular poles).
     :param dimP1: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
     :param dimP2: same thing as dimP1 for Primate2
-    :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
+    :param sulciP1: a list of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
     :param sulciP2: same thing as sulciP2 for Primate2
     :param lat_sphere: the interval for the latitudes of the sphere without the poles.
-    :return: a tuple of four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
+    :return: a list of four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
     sulci for Primate1 and the coordinates of the longitudinal and the latitudinal sulci for Primate2, on the sphere.
     """
 
@@ -63,8 +64,9 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     """
     Given the coordinates of the sulcal lines on the sphere (i.e. cortical surface) for each species (Primate1 and
      Primate2), computes and returns the affine transformations on each interval between the corresponding axes
-     for longitudinal and latitudinal sulci from Primate1 to Primate2.
-    :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
+     for longitudinal and latitudinal sulci in order to
+     transform the texture of Primate2 such that it matches the texture of Primate 1.
+    :param sulciP1: a list of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the sphere
     :param sulciP2: same thing as sulciP1 for Primate2
     :param long_corr: list of couples of integers giving the indices of the corresponding axes on the longitudes,
@@ -135,4 +137,103 @@ def rescale(sulci, affine, intervals):
         rescaled[l] += affine[N][1]
 
     return rescaled
+
+####################################################################
+#
+# main function
+#
+# python PrimateToPrimate.py Primate1 Primate2 side
+#
+####################################################################
+
+def main(Primate1, Primate2, side):
+
+    modelP1 = 'model_' + side + Primate1 + '.txt'
+    modelP2 = 'model_' + side + Primate2 + '.txt'
+
+    nameLon = Primate2 + '_' + side + 'white_lon.gii'
+    nameLat = Primate2 + '_' + side + 'white_lat.gii'
+
+    corr_table = Primate1 + '_' + Primate2 + '_Corr.txt'
+    corr = read_corr(corr_table)
+    assert (len(corr[0]) == len(corr[1]) and len(corr[2]) == len(corr[3])), "Error in the dimensions of the" \
+                                                                            "correspondences' table."
+
+    dimRect_P1, lat_sphere_P1, longitudeAxisID_P1, latitudeAxisID_P1, longitudeAxisCoord_P1, latitudeAxisCoord_P1, \
+    longitudeAxisSulci_P1, latitudeAxisSulci_P1 = read_file(modelP1)
+
+    dimRect_P2, lat_sphere_P2, longitudeAxisID_P2, latitudeAxisID_P2, longitudeAxisCoord_P2, latitudeAxisCoord_P2, \
+    longitudeAxisSulci_P2, latitudeAxisSulci_P2 = read_file(modelP2)
+
+    if not (lat_sphere_P1 == lat_sphere_P2 == [30., 150.]):
+        print("Latitudes on spheres are not the default value [30., 150.].")
+
+    longS_P1, latS_P1, longS_P2, latS_P2 = SquareToSphere(dimRect_P1,dimRect_P2,
+                                                          [longitudeAxisCoord_P1,latitudeAxisCoord_P1],
+                                                          [longitudeAxisCoord_P2,latitudeAxisCoord_P2])
+
+    sulciP1, sulciP2 = [longS_P1,latS_P1],[longS_P2,latS_P2]
+
+    long_corr = np.zeros((2,len(corr[0])))
+    for i in range(len(corr[0])):
+        ID = longitudeAxisSulci_P1[corr[0][i]][0]
+        Coord = longitudeAxisCoord_P1[longitudeAxisID_P1[ID]]
+        long_corr[0][i] = Coord
+        ID = longitudeAxisSulci_P2[corr[1][i]][0]
+        Coord = longitudeAxisCoord_P2[longitudeAxisID_P2[ID]]
+        long_corr[1][i] = Coord
+
+    lat_corr = np.zeros((2, len(corr[2])))
+    for i in range(len(corr[2])):
+        ID = longitudeAxisSulci_P1[corr[2][i]][0]
+        Coord = latitudeAxisCoord_P1[latitudeAxisID_P1[ID]]
+        long_corr[0][i] = Coord
+        ID = longitudeAxisSulci_P2[corr[3][i]][0]
+        Coord = latitudeAxisCoord_P2[latitudeAxisID_P2[ID]]
+        lat_corr[1][i] = Coord
+
+    long_transform, lat_transform = Affine_Transform(sulciP1,sulciP2,long_corr,lat_corr)
+
+    intervals_long = sulciP2[0][long_corr[1]]
+    intervals_lat = sulciP2[1][lat_corr[1]]
+
+    print('reading coordinates')
+    r = aims.Reader()
+    texLatF = r.read(nameLat)
+    texLonF = r.read(nameLon)
+    texLat = np.array(texLatF[0])
+    texLon = np.array(texLonF[0])
+
+    print('processing longitude')
+
+    newLon = rescale(texLon, long_transform, intervals_long)
+
+    print('processing latitude')
+
+    newLat = rescale(texLat, lat_transform, intervals_lat)
+
+    print('writing textures')
+
+    nv = texLat.size
+    newLatT = aims.TimeTexture_FLOAT(1, nv)
+    newLonT = aims.TimeTexture_FLOAT(1, nv)
+
+    for i in range(nv):
+        newLatT[0][i] = newLat[i]
+        newLonT[0][i] = newLon[i]
+
+    outLat = Primate1 + '_' + side + 'white_lat_to' + Primate2 + '.gii'
+    outLon = Primate1 + '_' + side + 'white_lon_to' + Primate2 + '.gii'
+
+    r = aims.Writer()
+    r.write(newLatT, outLat)
+    r.write(newLonT, outLon)
+    print('done')
+
+if __name__ == __main__:
+    arguments = sys.argv
+    Primate1, Primate2, side = arguments
+    main(Primate1, Primate2, side)
+
+
 

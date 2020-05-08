@@ -1,0 +1,5 @@
+attributes = {
+    'data_type' : 'FLOAT',
+    'nb_t_pos' : 10,
+    'object_type' : 'Texture'
+  }
