@@ -116,18 +116,13 @@ def rescale(sulci, affine, intervals):
     """
 
     N = len(sulci)  # there are N sulci, N+1 intervals, hence N+1 affine transformations
-    rescaled = np.zeros(N)  # initialize the list
-    i = 0
-    j = 0
-    while i < N:  # first N intervals
-        while intervals[i] <= sulci[j] < intervals[i + 1]:
-            rescaled[j] *= affine[i][0]
-            rescaled[j] += affine[i][1]
-            j += 1
-        i += 1
-    for l in range(j, N):  # last interval
-        rescaled[l] *= affine[N][0]
-        rescaled[l] += affine[N][1]
+    rescaled = np.copy(sulci)  # initialize the list
+
+    for j in range (N):  # first N intervals
+        for i in range (len(intervals)-1):
+            if intervals[i] < sulci[j] < intervals[i+1]:
+                rescaled[j] *= affine[i][0]
+                rescaled[j] += affine[i][1]
 
     return rescaled
 
@@ -165,8 +160,6 @@ def main(Primate1, Primate2, side):
     texLonF = r.read(nameLon)
     texLat = np.array(texLatF[0])
     texLon = np.array(texLonF[0])
-    texLat = np.concatenate(([30], texLat))
-    texLon = np.concatenate(([0], texLon))
 
     print('rescaling square coordinates to sphere coordinates')
 
@@ -195,12 +188,14 @@ def main(Primate1, Primate2, side):
 
     print('processing longitude')
 
-    intervals_lon = sulciP2[0, long_corr[:, 1]]
+    intervals_lon = np.concatenate(([0], sulciP2[0, long_corr[:, 1]], [360]))
+    intervals_lon = np.sort(intervals_lon)
     newLon = rescale(texLon, long_transform, intervals_lon)
 
     print('processing latitude')
 
-    intervals_lat = sulciP2[1, lat_corr[:, 1]]
+    intervals_lat = np.concatenate(([30], sulciP2[1, lat_corr[:, 1]], [150]))
+    intervals_lat = np.sort(intervals_lat)
     newLat = rescale(texLat, lat_transform, intervals_lat)
 
     print('writing textures')
@@ -225,5 +220,5 @@ def main(Primate1, Primate2, side):
 
 
 if __name__ == '__main__':
-    Primate1, Primate2, side = sys.argv
+    Primate1, Primate2, side = sys.argv[1:]
     main(Primate1, Primate2, side)
