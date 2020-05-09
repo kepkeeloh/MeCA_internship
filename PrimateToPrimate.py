@@ -97,7 +97,7 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
         long_transform[i][1] = longP1[i] - longP2[i] * long_transform[i][0]
 
     for i in range(Nlat + 1):
-        lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[1][i])
+        lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[i])
         lat_transform[i][1] = latP1[i] - latP2[i] * lat_transform[i][0]
 
     return long_transform, lat_transform
@@ -115,16 +115,12 @@ def rescale(sulci, affine, intervals):
     :return: the updated coordinates of the sulcal lines
     """
 
-    assert (len(affine) == len(intervals) + 1), "The lengths of the affine transformations and the intervals " \
-                                                "do not match."
-
-    new_intervals = np.concatenate([0], intervals)  # we add the lower boundary to the list of coordinates
-    N = len(sulci)  # there are now N sulci, N+1 'new_intervals', and N+1 affine transformations
+    N = len(sulci)  # there are N sulci, N+1 intervals, hence N+1 affine transformations
     rescaled = np.zeros(N)  # initialize the list
     i = 0
     j = 0
     while i < N:  # first N intervals
-        while (sulci[j] >= new_intervals[i]) and (sulci[j] < new_intervals[i + 1]):
+        while intervals[i] <= sulci[j] < intervals[i + 1]:
             rescaled[j] *= affine[i][0]
             rescaled[j] += affine[i][1]
             j += 1
@@ -169,6 +165,8 @@ def main(Primate1, Primate2, side):
     texLonF = r.read(nameLon)
     texLat = np.array(texLatF[0])
     texLon = np.array(texLonF[0])
+    texLat = np.concatenate(([30], texLat))
+    texLon = np.concatenate(([0], texLon))
 
     print('rescaling square coordinates to sphere coordinates')
 
@@ -177,9 +175,9 @@ def main(Primate1, Primate2, side):
 
     print('extracting correspondences')
 
-    assert (len(corrTable[0]) == len(corrTable[1]) and len(
-        corrTable[2] == len(corrTable[3]))), "Error in the dimensions of" \
-                                             "the correspondences' table."
+    assert (len(corrTable[0]) == len(corrTable[1]) and len(corrTable[2] == len(corrTable[3]))), \
+        "Error in the dimensions of the correspondences' table."
+
     Ncorr_lon = len(corrTable[0])
     Ncorr_lat = len(corrTable[2])
     long_corr = np.zeros((Ncorr_lon, 2))
@@ -197,12 +195,12 @@ def main(Primate1, Primate2, side):
 
     print('processing longitude')
 
-    intervals_lon = sulciP2[long_corr[:, 1]]
+    intervals_lon = sulciP2[0, long_corr[:, 1]]
     newLon = rescale(texLon, long_transform, intervals_lon)
 
     print('processing latitude')
 
-    intervals_lat = sulciP2[lat_corr[:, 1]]
+    intervals_lat = sulciP2[1, lat_corr[:, 1]]
     newLat = rescale(texLat, lat_transform, intervals_lat)
 
     print('writing textures')
