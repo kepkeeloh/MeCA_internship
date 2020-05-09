@@ -10,8 +10,6 @@ def read_model(file):
     dimRect = [round(float(data[2][1]) - float(data[1][1]), ndigits=1),
                round(float(data[3][1]) - float(data[4][1]), ndigits=1)]
 
-    lat_sphere = [float(data[5][1]), float(data[6][1])]
-
     for i in range (7,13):
         data[i][1] = data[i][1].split(',')
 
@@ -43,7 +41,7 @@ def read_model(file):
     for i in range (len(data[11][1])):
         lat_coor[i] = float(data[11][1][i])
 
-    return dimRect, lat_sphere, longID, latID, sulci_lon, sulci_lat, lon_coor, lat_coor
+    return dimRect, longID, latID, sulci_lon, sulci_lat, lon_coor, lat_coor
 
 def read_corr(file):
 

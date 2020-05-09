@@ -8,7 +8,8 @@ This code aims to rescale the axes' coordinates of Primate2 in order to be able 
 the Primate2 surface.
 """
 
-def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, lat_sphere = [30.,30.]):
+
+def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2):
     """
     As the system of coordinates is not the same in both the rectangle and the sphere for the models we are considering,
     we need to compute the position of the axes of each species (Primate1 and Primate2) on the sphere (i.e. the cortical
@@ -20,8 +21,6 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, lat_sphere = [30.,30.
     :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
     :param sulciP2: same thing as sulciP2 for Primate2
-    :param lat_sphere: a list of two floats that respectively give the latitude range from 0° and below 180° that define
-    the poles' areas.
     :return: four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
     sulci for Primate1 and the coordinates of the longitudinal and the latitudinal sulci for Primate2, on the sphere.
     """
@@ -36,23 +35,19 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, lat_sphere = [30.,30.
     LP1, lP1 = dimRectP1
     LP2, lP2 = dimRectP2
 
-    # extract the latitudinal range
-    lat_min = lat_sphere[0]
-    lat_max = 180. - lat_sphere[1]
-
     # initialise lists
     newLon_P1 = np.copy(sulciP1[0])
     newLat_P1 = np.copy(sulciP1[1])
     newLon_P2 = np.copy(sulciP2[0])
-    newLat_P2 = np.copy(sulciP2[0])
+    newLat_P2 = np.copy(sulciP2[1])
 
     for i in range(Nlon_P1):
         newLon_P1[i] *= 360 / LP1
         newLon_P1[i] += (sulciP1[0][i] < 0) * 360
 
     for i in range(Nlat_P1):
-        if lat_min < sulciP1[1][i] < lat_max:
-            newLat_P1[i] *= (lat_max - lat_min) / lP1
+        if 30 < sulciP1[1][i] < 150:
+            newLat_P1[i] *= 120 / lP1
             newLat_P1[i] += 30
 
     for i in range(Nlon_P2):
@@ -60,11 +55,12 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, lat_sphere = [30.,30.
         newLon_P2[i] += (sulciP2[0][i] < 0) * 360
 
     for i in range(Nlat_P2):
-        if lat_min < sulciP1[1][i] < lat_max:
-            newLat_P2[i] *= (lat_max - lat_min) / lP2
+        if 30 < sulciP1[1][i] < 150:
+            newLat_P2[i] *= 120 / lP2
             newLat_P2[i] += 30
 
     return [newLon_P1, newLat_P1], [newLon_P2, newLat_P2]
+
 
 def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     """
@@ -87,28 +83,25 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     Nlat = len(lat_corr)
 
     # initialization of the lists
-    long_transform = np.zeros((Nlong, 2))
-    lat_transform = np.zeros((Nlat, 2))
+    long_transform = np.zeros((Nlong + 1, 2))
+    lat_transform = np.zeros((Nlat + 1, 2))
 
     # make the lists of the axes that have a correspondence (and therefore define the intervals)
-    longP1 = sulciP1[0][long_corr[:, 0]]
-    latP1 = sulciP1[1][lat_corr[:, 0]]
-    longP2 = sulciP2[0][long_corr[:, 1]]
-    latP2 = sulciP2[1][lat_corr[:, 1]]
+    longP1 = np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360]))
+    latP1 = np.concatenate(([30], sulciP1[1][lat_corr[:, 0]], [150]))
+    longP2 = np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360]))
+    latP2 = np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150]))
 
-    # the transformation on the first interval is linear
-    long_transform[0][0] = sulciP1[0][0] / sulciP2[0][0]
-    lat_transform[0][0] = sulciP1[1][0] / sulciP2[1][0]
-
-    for i in range(1, Nlong):
+    for i in range(Nlong + 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
         long_transform[i][1] = longP1[i] - longP2[i] * long_transform[i][0]
 
-    for i in range(1, Nlat):
+    for i in range(Nlat + 1):
         lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[1][i])
         lat_transform[i][1] = latP1[i] - latP2[i] * lat_transform[i][0]
 
     return long_transform, lat_transform
+
 
 def rescale(sulci, affine, intervals):
     """
@@ -125,22 +118,23 @@ def rescale(sulci, affine, intervals):
     assert (len(affine) == len(intervals) + 1), "The lengths of the affine transformations and the intervals " \
                                                 "do not match."
 
-    new_intervals = np.concatenate([0], intervals) # we add the lower boundary to the list of coordinates
-    N = len(sulci) # there are now N sulci, N+1 'new_intervals', and N+1 affine transformations
-    rescaled = np.zeros(N) # initialize the list
+    new_intervals = np.concatenate([0], intervals)  # we add the lower boundary to the list of coordinates
+    N = len(sulci)  # there are now N sulci, N+1 'new_intervals', and N+1 affine transformations
+    rescaled = np.zeros(N)  # initialize the list
     i = 0
     j = 0
-    while i < N: # first N intervals
-        while (sulci[j] >= new_intervals[i]) and (sulci[j] < new_intervals[i+1]):
+    while i < N:  # first N intervals
+        while (sulci[j] >= new_intervals[i]) and (sulci[j] < new_intervals[i + 1]):
             rescaled[j] *= affine[i][0]
             rescaled[j] += affine[i][1]
             j += 1
         i += 1
-    for l in range(j,N): # last interval
+    for l in range(j, N):  # last interval
         rescaled[l] *= affine[N][0]
         rescaled[l] += affine[N][1]
 
     return rescaled
+
 
 ####################################################################
 #
@@ -151,7 +145,6 @@ def rescale(sulci, affine, intervals):
 ####################################################################
 
 def main(Primate1, Primate2, side):
-
     nameLon = Primate2 + '_' + side + 'white_lon.gii'
     nameLat = Primate2 + '_' + side + 'white_lat.gii'
 
@@ -161,8 +154,8 @@ def main(Primate1, Primate2, side):
     modelP2F = 'model_' + Primate2 + '_' + side + '.txt'
     modelP1 = read_model(modelP1F)
     modelP2 = read_model(modelP2F)
-    dimRect_P1, lat_sphere_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
-    dimRect_P2, lat_sphere_P2, longID_P2, latID_P2, sulci_lon_P2, sulci_lat_P2, lon_coor_P2, lat_coor_P2 = modelP2
+    dimRect_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
+    dimRect_P2, longID_P2, latID_P2, sulci_lon_P2, sulci_lat_P2, lon_coor_P2, lat_coor_P2 = modelP2
 
     print('reading correspondences\' table')
 
@@ -179,22 +172,22 @@ def main(Primate1, Primate2, side):
 
     print('rescaling square coordinates to sphere coordinates')
 
-    assert (lat_sphere_P1 == lat_sphere_P2 == [30., 30.])
     sulciP1, sulciP2 = SquareToSphere(dimRect_P1, dimRect_P2, [sulci_lon_P1, sulci_lat_P1],
                                       [sulci_lon_P2, sulci_lat_P2])
 
     print('extracting correspondences')
 
-    assert(len(corrTable[0])==len(corrTable[1]) and len(corrTable[2]==len(corrTable[3]))), "Error in the dimensions of" \
-                                                                                           "the correspondences' table."
+    assert (len(corrTable[0]) == len(corrTable[1]) and len(
+        corrTable[2] == len(corrTable[3]))), "Error in the dimensions of" \
+                                             "the correspondences' table."
     Ncorr_lon = len(corrTable[0])
     Ncorr_lat = len(corrTable[2])
     long_corr = np.zeros((Ncorr_lon, 2))
     lat_corr = np.zeros((Ncorr_lat, 2))
-    for i in range (Ncorr_lon):
+    for i in range(Ncorr_lon):
         long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable[0][i]]]
         long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable[1][i]]]
-    for i in range (Ncorr_lat):
+    for i in range(Ncorr_lat):
         lat_corr[i][0] = latID_P1[sulci_lat_P1[corrTable[2][i]]]
         lat_corr[i][1] = latID_P2[sulci_lat_P2[corrTable[3][i]]]
 
@@ -232,12 +225,7 @@ def main(Primate1, Primate2, side):
 
     return None
 
+
 if __name__ == '__main__':
     Primate1, Primate2, side = sys.argv
     main(Primate1, Primate2, side)
-
-
-
-
-
-
