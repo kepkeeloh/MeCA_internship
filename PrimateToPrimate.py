@@ -1,7 +1,7 @@
 import numpy as np
 from soma import aims
 import sys
-from read_file.py import *
+from read_file import *
 
 """
 This code aims to rescale the axes' coordinates of Primate2 in order to be able to map the Primate1's texture onto 
@@ -15,7 +15,7 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2):
     we need to compute the position of the axes of each species (Primate1 and Primate2) on the sphere (i.e. the cortical
     surface), given the respective dimensions of the rectangles of each species and the wanted dimensions of the sphere
     (which might be different from ([0,360]*[0,180]) as we do not take into account the intervals where the poles are
-    on the latitudes: with the default value, below 30° and above 150° are respectively the insular and cingular poles).
+    on the latitudes: with the default value, below 30 and above 150 are respectively the insular and cingular poles).
     :param dimRectP1: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
     :param dimRectP2: same thing as dimP1 for Primate2
     :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
@@ -163,18 +163,18 @@ def main(Primate1, Primate2, side):
 
     print('rescaling square coordinates to sphere coordinates')
 
-    sulciP1, sulciP2 = SquareToSphere(dimRect_P1, dimRect_P2, [sulci_lon_P1, sulci_lat_P1],
-                                      [sulci_lon_P2, sulci_lat_P2])
+    sulciP1, sulciP2 = SquareToSphere(dimRect_P1, dimRect_P2, [lon_coor_P1, lat_coor_P1],
+                                      [lon_coor_P2, lat_coor_P2])
 
     print('extracting correspondences')
 
-    assert (len(corrTable[0]) == len(corrTable[1]) and len(corrTable[2] == len(corrTable[3]))), \
+    assert (len(corrTable[0]) == len(corrTable[1]) and len(corrTable[2]) == len(corrTable[3])), \
         "Error in the dimensions of the correspondences' table."
 
     Ncorr_lon = len(corrTable[0])
     Ncorr_lat = len(corrTable[2])
-    long_corr = np.zeros((Ncorr_lon, 2))
-    lat_corr = np.zeros((Ncorr_lat, 2))
+    long_corr = np.zeros((Ncorr_lon, 2)).astype('int')
+    lat_corr = np.zeros((Ncorr_lat, 2)).astype('int')
     for i in range(Ncorr_lon):
         long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable[0][i]]]
         long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable[1][i]]]
@@ -188,13 +188,13 @@ def main(Primate1, Primate2, side):
 
     print('processing longitude')
 
-    intervals_lon = np.concatenate(([0], sulciP2[0, long_corr[:, 1]], [360]))
+    intervals_lon = np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360]))
     intervals_lon = np.sort(intervals_lon)
     newLon = rescale(texLon, long_transform, intervals_lon)
 
     print('processing latitude')
 
-    intervals_lat = np.concatenate(([30], sulciP2[1, lat_corr[:, 1]], [150]))
+    intervals_lat = np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150]))
     intervals_lat = np.sort(intervals_lat)
     newLat = rescale(texLat, lat_transform, intervals_lat)
 
