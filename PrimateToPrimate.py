@@ -87,10 +87,10 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     lat_transform = np.zeros((Nlat + 1, 2))
 
     # make the lists of the axes that have a correspondence (and therefore define the intervals)
-    longP1 = np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360]))
-    latP1 = np.concatenate(([30], sulciP1[1][lat_corr[:, 0]], [150]))
-    longP2 = np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360]))
-    latP2 = np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150]))
+    longP1 = np.sort(np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360])))
+    latP1 = np.sort(np.concatenate(([30], sulciP1[1][lat_corr[:, 0]], [150])))
+    longP2 = np.sort(np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360])))
+    latP2 = np.sort(np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150]))
 
     for i in range(Nlong + 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
@@ -131,7 +131,7 @@ def rescale(sulci, affine, intervals):
 #
 # main function
 #
-# python humansToMonkey.py Primate1 Primate2 side
+# python PrimateToPrimate.py Primate1 Primate2 side
 #
 ####################################################################
 
