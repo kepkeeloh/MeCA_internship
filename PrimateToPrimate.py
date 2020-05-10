@@ -90,7 +90,7 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     longP1 = np.sort(np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360])))
     latP1 = np.sort(np.concatenate(([30], sulciP1[1][lat_corr[:, 0]], [150])))
     longP2 = np.sort(np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360])))
-    latP2 = np.sort(np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150]))
+    latP2 = np.sort(np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150])))
 
     for i in range(Nlong + 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
