@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import sys
 from read_file import *
 import os
@@ -78,9 +77,8 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
     :param long_corr: a numpy array of shape (N,2) of integers giving the indices of the N corresponding sulci on the
     longitudes, with the first index corresponding to Primate1 and the second for Primate2
     :param lat_corr: same thing as long_corr for the latitudinal sulci
-    :return: a list of the longitudinal coordinates that define the intervals on which we computed the affine
-    transformations, including the boundaries, a list of couples of floats (a,b) that correspond to the affine
-    transformations y = ax + b on the longitudinal intervals, and respectively the same lists for the latitudes.
+    :return: the two lists of intervals on the longitudes and latitudes of Primate2 and the two lists of affine transformations
+    under the form [a,b] for y = ax+b for the respective longitudinal and latitudinal intervals
     """
 
     # extract cardinals
@@ -109,7 +107,7 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
         lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[i])
         lat_transform[i][1] = latP1[i] - latP2[i] * lat_transform[i][0]
 
-    return longP2, long_transform, latP2, lat_transform
+    return longP2, latP2, long_transform, lat_transform
 
 
 ####################################################################
@@ -121,11 +119,6 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
 ####################################################################
 
 def main(Primate1, Primate2, side):
-    dir = Primate1 + '_' + Primate2
-    if not os.path.exists(dir):
-        os.mkdir(dir)
-        print("directory ", dir, " created ")
-
     print('reading models\' informations')
 
     modelP1F = 'model_' + Primate1 + '_' + side + '.txt'
@@ -165,14 +158,31 @@ def main(Primate1, Primate2, side):
     P1toP2 = Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, poles_lat_P1, poles_lat_P2)
 
     print('writing it down')
-    nameP1toP2_long_int = Primate1 + '_to_' + Primate2 + '_' + side + 'lon_intervals.csv'
-    nameP1toP2_long = Primate1 + '_to_' + Primate2 + '_' + side + 'lon_AffineTrans.csv'
-    nameP1toP2_lat_int = Primate1 + '_to_' + Primate2 + '_' + side + 'lat_intervals.csv'
-    nameP1toP2_lat = Primate1 + '_to_' + Primate2 + '_' + side + 'lat_AffineTrans.csv'
-    pd.DataFrame(P1toP2[0]).to_csv(os.path.join(dir, nameP1toP2_long_int), header=False, index=False)
-    pd.DataFrame(P1toP2[1]).to_csv(os.path.join(dir, nameP1toP2_long), header=False, index=False)
-    pd.DataFrame(P1toP2[2]).to_csv(os.path.join(dir, nameP1toP2_lat_int), header=False, index=False)
-    pd.DataFrame(P1toP2[3]).to_csv(os.path.join(dir, nameP1toP2_lat), header=False, index=False)
+
+    f1 = open('affine_trans_' + Primate1 + '_to_' + Primate2 + '.txt', 'w+')
+    f1.write(Primate1 + ' to ' + Primate2 + '\n')
+
+    f1.write('int_lon_' + Primate2 + ':')
+    for i in range(len(P1toP2[0]) - 1):
+        f1.write(str(P1toP2[0][i]) + ',')
+    f1.write(str(P1toP2[0][-1]) + '\n')
+
+    f1.write('int_lat_' + Primate2 + ':')
+    for i in range(len(P1toP2[1]) - 1):
+        f1.write(str(P1toP2[1][i]) + ',')
+    f1.write(str(P1toP2[1][-1]) + '\n')
+
+    f1.write('long_transform:')
+    for i in range(len(P1toP2[2]) - 1):
+        f1.write(str(P1toP2[2][i][0]) + ' ' + str(P1toP2[2][i][1]) + ',')
+    f1.write(str(P1toP2[2][-1][0]) + ' ' + str(P1toP2[2][-1][1]) + '\n')
+
+    f1.write('lat_transform:')
+    for i in range(len(P1toP2[3]) - 1):
+        f1.write(str(P1toP2[3][i][0]) + ' ' + str(P1toP2[3][i][1]) + ',')
+    f1.write(str(P1toP2[3][-1][0]) + ' ' + str(P1toP2[3][-1][1]) + '\n')
+
+    f1.close()
 
     print('computing affine transformations from ' + Primate2 + ' to ' + Primate1)
     # swap the indices for the correspondences' table
@@ -186,14 +196,31 @@ def main(Primate1, Primate2, side):
     P2toP1 = Affine_Transform(sulciP2, sulciP1, long_corr_inv, lat_corr_inv, poles_lat_P2, poles_lat_P1)
 
     print('writing it down')
-    nameP2toP1_long_int = Primate2 + '_to_' + Primate1 + '_' + side + 'lon_intervals.csv'
-    nameP2toP1_long = Primate2 + '_to_' + Primate1 + '_' + side + 'lon_AffineTrans.csv'
-    nameP2toP1_lat_int = Primate2 + '_to_' + Primate1 + '_' + side + 'lat_intervals.csv'
-    nameP2toP1_lat = Primate2 + '_to_' + Primate1 + '_' + side + 'lat_AffineTrans.csv'
-    pd.DataFrame(P2toP1[0]).to_csv(os.path.join(dir, nameP2toP1_long_int), header=False, index=False)
-    pd.DataFrame(P2toP1[1]).to_csv(os.path.join(dir, nameP2toP1_long), header=False, index=False)
-    pd.DataFrame(P2toP1[2]).to_csv(os.path.join(dir, nameP2toP1_lat_int), header=False, index=False)
-    pd.DataFrame(P2toP1[3]).to_csv(os.path.join(dir, nameP2toP1_lat), header=False, index=False)
+
+    f2 = open('affine_trans_' + Primate2 + '_to_' + Primate1 + '.txt', 'w+')
+    f2.write(Primate2 + ' to ' + Primate1 + '\n')
+
+    f2.write('int_lon_' + Primate1 + ':')
+    for i in range(len(P2toP1[0]) - 1):
+        f2.write(str(P2toP1[0][i]) + ',')
+    f2.write(str(P2toP1[0][-1]) + '\n')
+
+    f2.write('int_lat_' + Primate1 + ':')
+    for i in range(len(P2toP1[1]) - 1):
+        f2.write(str(P2toP1[1][i]) + ',')
+    f2.write(str(P2toP1[1][-1]) + '\n')
+
+    f2.write('long_transform:')
+    for i in range(len(P2toP1[2]) - 1):
+        f2.write(str(P2toP1[2][i][0]) + ' ' + str(P2toP1[2][i][1]) + ',')
+    f2.write(str(P2toP1[2][-1][0]) + ' ' + str(P2toP1[2][-1][1]) + '\n')
+
+    f2.write('lat_transform:')
+    for i in range(len(P2toP1[3]) - 1):
+        f2.write(str(P2toP1[3][i][0]) + ' ' + str(P2toP1[3][i][1]) + ',')
+    f2.write(str(P2toP1[3][-1][0]) + ' ' + str(P2toP1[3][-1][1]) + '\n')
+
+    f2.close()
 
     print('done')
 
