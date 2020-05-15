@@ -131,7 +131,11 @@ def main(Primate1, Primate2, side):
     print('reading correspondences\' table')
 
     name_corr = Primate1 + '_' + Primate2 + '_' + 'corr.txt'
-    corrTable = read_corr(name_corr)
+    if os.path.exists(name_corr):
+        corrTable = read_corr(name_corr)
+    else:
+        name_corr = Primate2 + '_' + Primate1 + '_' + 'corr.txt'
+        corrTable = read_corr(name_corr)
 
     print('rescaling square coordinates to sphere coordinates')
 
@@ -140,19 +144,20 @@ def main(Primate1, Primate2, side):
 
     print('extracting correspondences')
 
-    assert (len(corrTable[0]) == len(corrTable[1]) and len(corrTable[2]) == len(corrTable[3])), \
-        "Error in the dimensions of the correspondences' table."
+    assert (len(corrTable['lon_'+Primate1]) == len(corrTable['lon_'+Primate2]) and
+            len(corrTable['lat_'+Primate1]) == len(corrTable['lat_'+Primate2])), \
+        "Number of corresponding sulci do not match in corr text file."
 
-    Ncorr_lon = len(corrTable[0])
-    Ncorr_lat = len(corrTable[2])
+    Ncorr_lon = len(corrTable['lon_'+Primate1])
+    Ncorr_lat = len(corrTable['lat_'+Primate1])
     long_corr = np.zeros((Ncorr_lon, 2)).astype('int')
     lat_corr = np.zeros((Ncorr_lat, 2)).astype('int')
     for i in range(Ncorr_lon):
-        long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable[0][i]]]
-        long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable[1][i]]]
+        long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable['lon_'+Primate1][i]]]
+        long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable['lon_'+Primate2][i]]]
     for i in range(Ncorr_lat):
-        lat_corr[i][0] = latID_P1[sulci_lat_P1[corrTable[2][i]]]
-        lat_corr[i][1] = latID_P2[sulci_lat_P2[corrTable[3][i]]]
+        lat_corr[i][0] = latID_P1[sulci_lat_P1[corrTable['lat_'+Primate1][i]]]
+        lat_corr[i][1] = latID_P2[sulci_lat_P2[corrTable['lat_'+Primate2][i]]]
 
     print('computing affine transformations from ' + Primate1 + ' to ' + Primate2)
     P1toP2 = Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, poles_lat_P1, poles_lat_P2)

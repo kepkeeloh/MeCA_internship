@@ -49,15 +49,31 @@ def read_model(file):
 
 
 def read_corr(file):
+    """
+    Reads the text file of corresponding sulcal lines.
+    :param file: text file with four lines with the pattern= dir_Primate:sulcus1,sulcus2,... with dir = 'lon' or
+    'lat' and Primate = 'Primate1' or 'Primate2'
+    :return: a dictionary that gives the list of corresponding sulci (hence we do not care about sorting the lines
+    and one correspondences' text file works for both ways)
+    """
     corrTable = open(file, 'r').read()
     corrTable = corrTable.split('\n')
     for i in range(4):
-        corrTable[i] = corrTable[i].split(',')
-
-    return corrTable
+        corrTable[i] = corrTable[i].split(':')
+        corrTable[i][1] = corrTable[i][1].split(',')
+    corr_dict = {}
+    for i in range(4):
+        corr_dict[corrTable[i][0]] = corrTable[i][1]
+    return corr_dict
 
 
 def read_affine(file):
+    """
+    Reads the text file of affine transformations as it is returned by the Affine_transformations.py code
+    :param file: the text file mentioned above
+    :return: four numpy arrays of longitudinal and latitudinal boundaries for the intervals and the respective
+    affine transformations
+    """
     data = open(file, 'r').read()
     data = data.split('\n')
     for i in range(1, 5):
@@ -79,4 +95,3 @@ def read_affine(file):
     lon_transform = np.array(lon_transform).astype('float')
     lat_transform = np.array(lat_transform).astype('float')
     return int_lon, int_lat, lon_transform, lat_transform
-
