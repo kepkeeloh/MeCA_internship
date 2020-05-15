@@ -71,9 +71,12 @@ def read_affine(file):
     lon_transform = np.zeros((Nlon, 2))
     lat_transform = np.zeros((Nlat, 2))
     for i in range(Nlon):
+        data[3][1][i] = data[3][1][i].split(' ')
         lon_transform[i] = [data[3][1][i][0], data[3][1][i][1]]
     for i in range(Nlat):
+        data[4][1][i] = data[4][1][i].split(' ')
         lat_transform[i] = [data[4][1][i][0], data[4][1][i][1]]
     lon_transform = np.array(lon_transform).astype('float')
     lat_transform = np.array(lat_transform).astype('float')
     return int_lon, int_lat, lon_transform, lat_transform
+

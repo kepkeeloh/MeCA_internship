@@ -9,18 +9,21 @@ the Primate2 surface.
 """
 
 
-def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2):
+def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, poles_lat_P1, poles_lat_P2):
     """
     As the system of coordinates is not the same in both the rectangle and the sphere for the models we are considering,
     we need to compute the position of the axes of each species (Primate1 and Primate2) on the sphere (i.e. the cortical
     surface), given the respective dimensions of the rectangles of each species and the wanted dimensions of the sphere
     (which might be different from ([0,360]*[0,180]) as we do not take into account the intervals where the poles are
-    on the latitudes: with the default value, below 30 and above 150 are respectively the insular and cingular poles).
+    on the latitudes).
+    :param poles_lat_P1: latitude intervals above 0 and below 180 for respectively the insular and cingular poles
+    for Primate1
+    :param poles_lat_P2: same thing as poles_lat_P1 for Primate2
     :param dimRectP1: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
-    :param dimRectP2: same thing as dimP1 for Primate2
-    :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
+    :param dimRectP2: same thing as dimRectP1 for Primate2
+    :param sulciP1: a list of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
-    :param sulciP2: same thing as sulciP2 for Primate2
+    :param sulciP2: same thing as sulciP1 for Primate2
     :return: four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
     sulci for Primate1 and the coordinates of the longitudinal and the latitudinal sulci for Primate2, on the sphere.
     """
@@ -35,6 +38,10 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2):
     LP1, lP1 = dimRectP1
     LP2, lP2 = dimRectP2
 
+    # extract latitude boundaries
+    insP1, cinP1 = poles_lat_P1[0], 180. - poles_lat_P1[1]
+    insp2, cinP2 = poles_lat_P2[0], 180. - poles_lat_P2[1]
+
     # initialise lists
     newLon_P1 = np.copy(sulciP1[0])
     newLat_P1 = np.copy(sulciP1[1])
@@ -46,28 +53,31 @@ def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2):
         newLon_P1[i] += (sulciP1[0][i] < 0) * 360
 
     for i in range(Nlat_P1):
-        if 30 < sulciP1[1][i] < 150:
-            newLat_P1[i] *= 120 / lP1
-            newLat_P1[i] += 30
+        if insP1 < sulciP1[1][i] < cinP1:
+            newLat_P1[i] *= (cinP1 - insP1) / lP1
+            newLat_P1[i] += insP1
 
     for i in range(Nlon_P2):
         newLon_P2[i] *= 360 / LP2
         newLon_P2[i] += (sulciP2[0][i] < 0) * 360
 
     for i in range(Nlat_P2):
-        if 30 < sulciP1[1][i] < 150:
-            newLat_P2[i] *= 120 / lP2
-            newLat_P2[i] += 30
+        if insP2 < sulciP2[1][i] < cinP2:
+            newLat_P2[i] *= (cinP2 - insP2) / lP2
+            newLat_P2[i] += insP2
 
     return [newLon_P1, newLat_P1], [newLon_P2, newLat_P2]
 
 
-def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
+def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, poles_lat_P1, poles_lat_P2):
     """
     Given the coordinates of the sulcal lines on the sphere (i.e. cortical surface) for each species (Primate1 and
      Primate2), computes and returns the affine transformations on each interval between the corresponding axes
-     for longitudinal and latitudinal sulci from Primate1 to Primate2 (i.e. meant to modify the Primate2's coordinate's
+     for longitudinal and latitudinal sulci from Primate1 to Primate2 (i.e. meant to rescale the Primate2's coordinates'
      system)
+    :param poles_lat_P1: latitude intervals above 0 and below 180 for respectively the insular and cingular poles
+    for Primate1
+    :param poles_lat_P2: same thing as poles_lat_P1 for Primate2
     :param sulciP1: a list of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the sphere
     :param sulciP2: same thing as sulciP1 for Primate2
@@ -82,15 +92,19 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     Nlong = len(long_corr)
     Nlat = len(lat_corr)
 
+    # extract latitude boundaries
+    insP1, cinP1 = poles_lat_P1[0], 180. - poles_lat_P1[1]
+    insp2, cinP2 = poles_lat_P2[0], 180. - poles_lat_P2[1]
+
     # initialization of the lists
     long_transform = np.zeros((Nlong + 1, 2))
     lat_transform = np.zeros((Nlat + 1, 2))
 
     # make the lists of the axes that have a correspondence (and therefore define the intervals)
     longP1 = np.sort(np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360])))
-    latP1 = np.sort(np.concatenate(([30], sulciP1[1][lat_corr[:, 0]], [150])))
+    latP1 = np.sort(np.concatenate(([insP1], sulciP1[1][lat_corr[:, 0]], [cinP1])))
     longP2 = np.sort(np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360])))
-    latP2 = np.sort(np.concatenate(([30], sulciP2[1][lat_corr[:, 1]], [150])))
+    latP2 = np.sort(np.concatenate(([insP1], sulciP2[1][lat_corr[:, 1]], [cinP2])))
 
     for i in range(Nlong + 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
@@ -103,24 +117,24 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr):
     return long_transform, lat_transform
 
 
-def rescale(sulci, affine, intervals):
+def rescale(texture, affine, intervals):
     """
-    Updates the sulci coordinates on every interval between the corresponding axes thanks to the given affine
+    Updates the axes' coordinates on every interval between the corresponding axes thanks to the given affine
     transformations. It can be used for either longitudinal or latitudinal sulcal lines and is meant to be used on
     Primate2 for a mapping from Primate1 to Primate2.
-    :param sulci: the list of coordinates of the sulcal lines
+    :param texture: numpy array of coordinates of the (longitudinal or latitudinal) axes
     :param affine: the list of affine transformations under the form (a,b) for y = ax + b
     :param intervals: the list of coordinates that define the intervals of transformation (i.e. the list of coordinates
     which have a correspondence with the other primate species we are comparing it to)
-    :return: the updated coordinates of the sulcal lines
+    :return: the updated coordinates of the axes
     """
 
-    N = len(sulci)  # there are N sulci, N+1 intervals, hence N+1 affine transformations
-    rescaled = np.copy(sulci)  # initialize the list
+    N = len(texture)  # there are N sulci, N+1 intervals, hence N+1 affine transformations
+    rescaled = np.copy(texture)  # initialize the list
 
-    for j in range (N):  # first N intervals
-        for i in range (len(intervals)-1):
-            if intervals[i] < sulci[j] < intervals[i+1]:
+    for j in range(N):  # first N intervals
+        for i in range(len(intervals) - 1):
+            if intervals[i] < texture[j] < intervals[i + 1]:
                 rescaled[j] *= affine[i][0]
                 rescaled[j] += affine[i][1]
 
@@ -145,8 +159,8 @@ def main(Primate1, Primate2, side):
     modelP2F = 'model_' + Primate2 + '_' + side + '.txt'
     modelP1 = read_model(modelP1F)
     modelP2 = read_model(modelP2F)
-    dimRect_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
-    dimRect_P2, longID_P2, latID_P2, sulci_lon_P2, sulci_lat_P2, lon_coor_P2, lat_coor_P2 = modelP2
+    dimRect_P1, poles_lat_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
+    dimRect_P2, poles_lat_P2, longID_P2, latID_P2, sulci_lon_P2, sulci_lat_P2, lon_coor_P2, lat_coor_P2 = modelP2
 
     print('reading correspondences\' table')
 
@@ -164,7 +178,7 @@ def main(Primate1, Primate2, side):
     print('rescaling square coordinates to sphere coordinates')
 
     sulciP1, sulciP2 = SquareToSphere(dimRect_P1, dimRect_P2, [lon_coor_P1, lat_coor_P1],
-                                      [lon_coor_P2, lat_coor_P2])
+                                      [lon_coor_P2, lat_coor_P2], poles_lat_P1, poles_lat_P2)
 
     print('extracting correspondences')
 
@@ -184,7 +198,7 @@ def main(Primate1, Primate2, side):
 
     print('computing affine transformations')
 
-    long_transform, lat_transform = Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr)
+    long_transform, lat_transform = Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, poles_lat_P1, poles_lat_P2)
 
     print('processing longitude')
 

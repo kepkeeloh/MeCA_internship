@@ -159,7 +159,7 @@ def main(Primate1, Primate2, side):
 
     print('writing it down')
 
-    f1 = open('affine_trans_' + Primate1 + '_to_' + Primate2 + '.txt', 'w+')
+    f1 = open('affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt', 'w+')
     f1.write(Primate1 + ' to ' + Primate2 + '\n')
 
     f1.write('int_lon_' + Primate2 + ':')
@@ -197,7 +197,7 @@ def main(Primate1, Primate2, side):
 
     print('writing it down')
 
-    f2 = open('affine_trans_' + Primate2 + '_to_' + Primate1 + '.txt', 'w+')
+    f2 = open('affine_trans_' + Primate2 + '_to_' + Primate1 + '_' + side + '.txt', 'w+')
     f2.write(Primate2 + ' to ' + Primate1 + '\n')
 
     f2.write('int_lon_' + Primate1 + ':')
