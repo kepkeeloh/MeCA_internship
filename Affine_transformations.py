@@ -121,8 +121,8 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
 def main(Primate1, Primate2, side):
     print('reading models\' informations')
 
-    modelP1F = 'model_' + Primate1 + '_' + side + '.txt'
-    modelP2F = 'model_' + Primate2 + '_' + side + '.txt'
+    modelP1F = os.path.join(Primate1, 'model_' + Primate1 + '_' + side + '.txt')
+    modelP2F = os.path.join(Primate2, 'model_' + Primate2 + '_' + side + '.txt')
     modelP1 = read_model(modelP1F)
     modelP2 = read_model(modelP2F)
     dimRect_P1, poles_lat_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
@@ -164,7 +164,10 @@ def main(Primate1, Primate2, side):
 
     print('writing it down')
 
-    f1 = open('affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt', 'w+')
+    if not os.path.exists(Primate1 + '_to_' + Primate2):
+        os.mkdir(Primate1 + '_to_' + Primate2)
+
+    f1 = open(os.path.join(Primate1 + '_to_' + Primate2, 'affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt'), 'w+')
     f1.write(Primate1 + ' to ' + Primate2 + '\n')
 
     f1.write('int_lon_' + Primate2 + ':')
@@ -202,7 +205,10 @@ def main(Primate1, Primate2, side):
 
     print('writing it down')
 
-    f2 = open('affine_trans_' + Primate2 + '_to_' + Primate1 + '_' + side + '.txt', 'w+')
+    if not os.path.exists(Primate2 + '_to_' + Primate1):
+        os.mkdir(Primate2 + '_to_' + Primate1)
+
+    f2 = open(os.path.join(Primate2 + '_to_' + Primate1, 'affine_trans_' + Primate2 + '_to_' + Primate1 + '_' + side + '.txt'), 'w+')
     f2.write(Primate2 + ' to ' + Primate1 + '\n')
 
     f2.write('int_lon_' + Primate1 + ':')
