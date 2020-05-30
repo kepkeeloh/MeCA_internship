@@ -15,7 +15,7 @@ def iterate (Primate1, Primate2, side):
     :return: the rescaled longitudinal and latitudinal textures for each individual of Primate2
     """
 
-    individuals = [i for i in os.listdir(Primate2) if 'average' not in i and '.' not in i]
+    individuals = [i for i in os.listdir(Primate2) if '.' not in i]
 
     print('reading affine transformations')
 

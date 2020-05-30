@@ -4,62 +4,44 @@ from read_file import *
 import os
 
 
-def SquareToSphere(dimRectP1, dimRectP2, sulciP1, sulciP2, latP1, latP2):
+def SquareToSphere(dimRect, sulci, lat):
     """
     As the system of coordinates is not the same in both the rectangle and the sphere for the models we are considering,
-    we need to compute the position of the axes of each species (Primate1 and Primate2) on the sphere (i.e. the cortical
-    surface), given the respective dimensions of the rectangles of each species and the wanted dimensions of the sphere
+    we need to compute the position of the axes of each species on the sphere (i.e. the cortical
+    surface), given the respective dimensions of the rectangle of each species and the wanted dimensions of the sphere
     (which might be different from ([0,360]*[0,180]) as we do not take into account the intervals where the poles are
     on the latitudes: with the default value, below 30 and above 150 are respectively the insular and cingular poles).
-    :param latP1: [m,n] such that the m first degrees above 0 of latitudes correspond to the insular pole
+    :param lat: [m,n] such that the m first degrees above 0 of latitudes correspond to the insular pole
     and the n first degrees from 180 downwards correspond to the cingular pole, for Primate1
-    :param latP2: same thing as latP1 for Primate2
-    :param dimRectP1: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
-    :param dimRectP2: same thing as dimP1 for Primate2
-    :param sulciP1: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
+    :param dimRect: the dimensions of the rectangle for the Primate1 as [Longitude,latitude]
+    :param sulci: a tuple of two lists of floats, respectively, the coordinates of the longitudinal and the
      latitudinal sulci for Primate1 on the rectangle
-    :param sulciP2: same thing as sulciP2 for Primate2
-    :return: four lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
-    sulci for Primate1 and the coordinates of the longitudinal and the latitudinal sulci for Primate2, on the sphere.
+    :return: two lists of floats, respectively, the coordinates of the longitudinal and the latitudinal
+    sulci for the given Primate model, on the sphere.
     """
 
     # extract cardinals
-    Nlon_P1 = len(sulciP1[0])
-    Nlat_P1 = len(sulciP1[1])
-    Nlon_P2 = len(sulciP2[0])
-    Nlat_P2 = len(sulciP2[1])
+    Nlon = len(sulci[0])
+    Nlat = len(sulci[1])
 
     # extract rectangle dimensions and latitudes' boundaries
-    LP1, lP1 = dimRectP1
-    LP2, lP2 = dimRectP2
-    insP1, cinP1 = latP1[0], 180 - latP1[1]
-    insP2, cinP2 = latP2[0], 180 - latP2[1]
+    L, l = dimRect
+    ins, cin = lat[0], 180 - lat[1]
 
     # initialise lists
-    newLon_P1 = np.copy(sulciP1[0])
-    newLat_P1 = np.copy(sulciP1[1])
-    newLon_P2 = np.copy(sulciP2[0])
-    newLat_P2 = np.copy(sulciP2[1])
+    newLon = np.copy(sulci[0])
+    newLat = np.copy(sulci[1])
 
-    for i in range(Nlon_P1):
-        newLon_P1[i] *= 360 / LP1
-        newLon_P1[i] += (sulciP1[0][i] < 0) * 360
+    for i in range(Nlon):
+        newLon[i] *= 360 / L
+        newLon[i] += (sulci[0][i] < 0) * 360
 
-    for i in range(Nlat_P1):
-        if insP1 < sulciP1[1][i] < cinP1:
-            newLat_P1[i] *= (cinP1 - insP1) / lP1
-            newLat_P1[i] += insP1
+    for i in range(Nlat):
+        if ins < sulci[1][i] < cin:
+            newLat[i] *= (cin - ins) / l
+            newLat[i] += ins
 
-    for i in range(Nlon_P2):
-        newLon_P2[i] *= 360 / LP2
-        newLon_P2[i] += (sulciP2[0][i] < 0) * 360
-
-    for i in range(Nlat_P2):
-        if insP2 < sulciP2[1][i] < cinP2:
-            newLat_P2[i] *= (cinP2 - insP2) / lP2
-            newLat_P2[i] += insP2
-
-    return [newLon_P1, newLat_P1], [newLon_P2, newLat_P2]
+    return newLon, newLat
 
 
 def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
@@ -139,25 +121,25 @@ def main(Primate1, Primate2, side):
 
     print('rescaling square coordinates to sphere coordinates')
 
-    sulciP1, sulciP2 = SquareToSphere(dimRect_P1, dimRect_P2, [lon_coor_P1, lat_coor_P1],
-                                      [lon_coor_P2, lat_coor_P2], poles_lat_P1, poles_lat_P2)
+    sulciP1 = SquareToSphere(dimRect_P1, [lon_coor_P1, lat_coor_P1], poles_lat_P1)
+    sulciP2 = SquareToSphere(dimRect_P2, [lon_coor_P2, lat_coor_P2], poles_lat_P2)
 
     print('extracting correspondences')
 
-    assert (len(corrTable['lon_'+Primate1]) == len(corrTable['lon_'+Primate2]) and
-            len(corrTable['lat_'+Primate1]) == len(corrTable['lat_'+Primate2])), \
+    assert (len(corrTable['lon_' + Primate1]) == len(corrTable['lon_' + Primate2]) and
+            len(corrTable['lat_' + Primate1]) == len(corrTable['lat_' + Primate2])), \
         "Number of corresponding sulci do not match in corr text file."
 
-    Ncorr_lon = len(corrTable['lon_'+Primate1])
-    Ncorr_lat = len(corrTable['lat_'+Primate1])
+    Ncorr_lon = len(corrTable['lon_' + Primate1])
+    Ncorr_lat = len(corrTable['lat_' + Primate1])
     long_corr = np.zeros((Ncorr_lon, 2)).astype('int')
     lat_corr = np.zeros((Ncorr_lat, 2)).astype('int')
     for i in range(Ncorr_lon):
-        long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable['lon_'+Primate1][i]]]
-        long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable['lon_'+Primate2][i]]]
+        long_corr[i][0] = longID_P1[sulci_lon_P1[corrTable['lon_' + Primate1][i]]]
+        long_corr[i][1] = longID_P2[sulci_lon_P2[corrTable['lon_' + Primate2][i]]]
     for i in range(Ncorr_lat):
-        lat_corr[i][0] = latID_P1[sulci_lat_P1[corrTable['lat_'+Primate1][i]]]
-        lat_corr[i][1] = latID_P2[sulci_lat_P2[corrTable['lat_'+Primate2][i]]]
+        lat_corr[i][0] = latID_P1[sulci_lat_P1[corrTable['lat_' + Primate1][i]]]
+        lat_corr[i][1] = latID_P2[sulci_lat_P2[corrTable['lat_' + Primate2][i]]]
 
     print('computing affine transformations from ' + Primate1 + ' to ' + Primate2)
     P1toP2 = Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, poles_lat_P1, poles_lat_P2)
@@ -167,7 +149,8 @@ def main(Primate1, Primate2, side):
     if not os.path.exists(Primate1 + '_to_' + Primate2):
         os.mkdir(Primate1 + '_to_' + Primate2)
 
-    f1 = open(os.path.join(Primate1 + '_to_' + Primate2, 'affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt'), 'w+')
+    f1 = open(os.path.join(Primate1 + '_to_' + Primate2,
+                           'affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt'), 'w+')
     f1.write(Primate1 + ' to ' + Primate2 + '\n')
 
     f1.write('int_lon_' + Primate2 + ':')
@@ -208,7 +191,8 @@ def main(Primate1, Primate2, side):
     if not os.path.exists(Primate2 + '_to_' + Primate1):
         os.mkdir(Primate2 + '_to_' + Primate1)
 
-    f2 = open(os.path.join(Primate2 + '_to_' + Primate1, 'affine_trans_' + Primate2 + '_to_' + Primate1 + '_' + side + '.txt'), 'w+')
+    f2 = open(os.path.join(Primate2 + '_to_' + Primate1,
+                           'affine_trans_' + Primate2 + '_to_' + Primate1 + '_' + side + '.txt'), 'w+')
     f2.write(Primate2 + ' to ' + Primate1 + '\n')
 
     f2.write('int_lon_' + Primate1 + ':')
