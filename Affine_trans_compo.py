@@ -200,6 +200,8 @@ def Affine_composition(Primate1, Primate2, Primate3, side):
             latP13.append(P1toP2[1][j][0]*sulciP2[1][lat_corrP23[i][0]]+P1toP2[1][j][1])
             latP31.append(sulciP3[1][lat_corrP23[i][1]])
 
+    longP13, latP13, longP31, latP31 = np.sort(longP13), np.sort(latP13), np.sort(longP31), np.sort(latP31)
+
     P1toP3 = Affine_transform([longP13, latP13], [longP31, latP31])
 
     return P1toP3
