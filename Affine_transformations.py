@@ -59,8 +59,9 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
     :param long_corr: a numpy array of shape (N,2) of integers giving the indices of the N corresponding sulci on the
     longitudes, with the first index corresponding to Primate1 and the second for Primate2
     :param lat_corr: same thing as long_corr for the latitudinal sulci
-    :return: the two lists of intervals on the longitudes and latitudes of Primate2 and the two lists of affine
-    transformations under the form [a,b] for y = ax+b for the respective longitudinal and latitudinal intervals
+    :return: the two lists of coordinates on the longitudes and latitudes of Primate2 and the two lists of affine
+    transformations under the form [a,b] for y = ax+b for the respective longitudinal and latitudinal intervals defined
+    by the coordinates given by the first two lists
     """
 
     # extract cardinals
