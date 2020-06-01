@@ -15,6 +15,7 @@ def inv_affine(param, y):
     b = param[1]
     return (y - b) / a
 
+
 def Affine_transform(corraxesP1, corraxesP2):
     """
     Given the coordinates of the sulcal lines on the sphere (i.e. cortical surface) for each species (Primate1 and
@@ -39,7 +40,6 @@ def Affine_transform(corraxesP1, corraxesP2):
     longP1, latP1 = corraxesP1
     longP2, latP2 = corraxesP2
 
-
     for i in range(Nlong - 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
         long_transform[i][1] = longP1[i] - longP2[i] * long_transform[i][0]
@@ -53,15 +53,19 @@ def Affine_transform(corraxesP1, corraxesP2):
 
 def Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, corrTableP13):
     """
-    A new version on Affine_transform that enables to reparametrize the target primate coordinate system through a
-    a composition with a third model Primate2 in order to refine the reparametrization with intermediary correspondences
-    that might exist between Primate1 and Primate2 or Primate2 and Primate3 but not between Primate1 and Primate3
-    :param Primate1: string - Primate whose texture is to be mapped onto Primate3
-    :param Primate2: string - Primate that will be used to obtain intermediary correspondences from Primate1 to Primate3
-    :param Primate3: string - Primate which is to be reparametrized to Primate1's coordinate system
-    :param side: string - 'L' or 'R' hemisphere
-    :return: 2 2D-arrays of floats - the two lists of affine transformations under the form [a,b] for y = ax+b for the
-    respective longitudinal and latitudinal intervals which are to be applied on Primate3 long and lat textures
+    Enables to reparametrize the Primate3 coordinate system to the Primate1's through a composition with a third model
+    Primate2 in order to refine the reparametrization with intermediary correspondences that might exist between
+    Primate1 and Primate2 or Primate2 and Primate3 but not between Primate1 and Primate3
+    @:param modelP1: the hip-hop sulci model for Primate1  given by the function read_model in read_file.py
+    @:param modelP2: same thing as modelP1 for Primate2
+    @:param modelP3: same thing as modelP1 for Primate3
+    @:param corrTableP12: dictionary of the corresponding longitudinal and latitudinal sulci between Primate1 and
+    Primate2 given by the function read_corr from read_file.py
+    @:param corrTableP23: same thing as corrTableP12 between Primate2 and Primate3
+    @:param corrTableP13: same thing as corrTableP13 between Primate1 and Primate3
+    :return: the two lists of coordinates that define the intervals on the longitudes and latitudes of Primate3 and the
+    two lists of affine transformations under the form [a,b] for y = ax+b for the respective longitudinal and
+    latitudinal intervals
     """
 
     dimRect_P1, poles_lat_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
@@ -142,42 +146,41 @@ def Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, co
     for i in range(Ncorr_lonP12):
         if corrTableP12['lon_' + Primate1][i] not in corrTableP13['lon_' + Primate1]:
             j = 0
-            while sulciP2[0][long_corrP12[i][1]] >= inv_affine(P2toP3[0][j], longP23[j+1]):
+            while sulciP2[0][long_corrP12[i][1]] >= inv_affine(P2toP3[0][j], longP23[j + 1]):
                 j += 1
-            longP13=np.append(longP13,sulciP1[0][long_corrP12[i][1]])
-            longP31=np.append(longP31,inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
+            longP13 = np.append(longP13, sulciP1[0][long_corrP12[i][1]])
+            longP31 = np.append(longP31, inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
     for i in range(Ncorr_latP12):
         if corrTableP12['lat_' + Primate1][i] not in corrTableP13['lat_' + Primate1]:
             j = 0
-            while sulciP2[1][lat_corrP12[i][1]] >= inv_affine(P2toP3[1][j], latP23[j+1]):
+            while sulciP2[1][lat_corrP12[i][1]] >= inv_affine(P2toP3[1][j], latP23[j + 1]):
                 j += 1
-            latP13=np.append(latP13,sulciP1[0][lat_corrP12[i][1]])
-            latP31=np.append(latP31,inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
+            latP13 = np.append(latP13, sulciP1[0][lat_corrP12[i][1]])
+            latP31 = np.append(latP31, inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
 
     for i in range(Ncorr_lonP23):
         if corrTableP23['lon_' + Primate3][i] not in corrTableP13['lon_' + Primate3]:
             j = 0
-            while sulciP2[0][long_corrP23[i][0]] >= longP12[j+1]:
+            while sulciP2[0][long_corrP23[i][0]] >= longP12[j + 1]:
                 j += 1
-            longP13=np.append(longP13,P1toP2[0][j][0]*sulciP2[0][long_corrP23[i][0]]+P1toP2[0][j][1])
-            longP31=np.append(longP31,sulciP3[0][long_corrP23[i][1]])
+            longP13 = np.append(longP13, P1toP2[0][j][0] * sulciP2[0][long_corrP23[i][0]] + P1toP2[0][j][1])
+            longP31 = np.append(longP31, sulciP3[0][long_corrP23[i][1]])
     for i in range(Ncorr_latP23):
         if corrTableP23['lat_' + Primate3][i] not in corrTableP13['lat_' + Primate3]:
             j = 0
-            while sulciP2[1][lat_corrP23[i][0]] >= latP12[j+1]:
+            while sulciP2[1][lat_corrP23[i][0]] >= latP12[j + 1]:
                 j += 1
-            latP13=np.append(latP13,P1toP2[1][j][0]*sulciP2[1][lat_corrP23[i][0]]+P1toP2[1][j][1])
-            latP31=np.append(latP31,sulciP3[1][lat_corrP23[i][1]])
+            latP13 = np.append(latP13, P1toP2[1][j][0] * sulciP2[1][lat_corrP23[i][0]] + P1toP2[1][j][1])
+            latP31 = np.append(latP31, sulciP3[1][lat_corrP23[i][1]])
 
     longP13, latP13, longP31, latP31 = np.sort(longP13), np.sort(latP13), np.sort(longP31), np.sort(latP31)
 
     long_transform, lat_transform = Affine_transform([longP13, latP13], [longP31, latP31])
-    
 
     return longP31, latP31, long_transform, lat_transform
 
-def main(Primate1, Primate2, Primate3, side):
 
+def main(Primate1, Primate2, Primate3, side):
     print('reading models\' informations')
 
     modelP1F = os.path.join(Primate1, 'model_' + Primate1 + '_' + side + '.txt')
@@ -245,6 +248,7 @@ def main(Primate1, Primate2, Primate3, side):
     print('done')
 
     return None
+
 
 if __name__ == '__main__':
     Primate1, Primate2, Primate3, side = sys.argv[1:]
