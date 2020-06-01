@@ -5,7 +5,7 @@ from read_file import *
 from soma import aims
 from Rescale import rescale
 
-def iterate (Primate1, Primate2, side):
+def iterate (Primate1, Primate2, side, Primate_inter = None):
     """
     Meant to be used on a database to iterate the reparametrization on a list of individuals of one species to the
     coordinate system of Primate1.
@@ -19,7 +19,11 @@ def iterate (Primate1, Primate2, side):
 
     print('reading affine transformations')
 
-    affine_model = os.path.join(Primate1 + '_to_' + Primate2, 'affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt')
+    dir = Primate1 + '_to_' + Primate2
+    if Primate_inter is not None:
+        dir = Primate1 + '_to_' + Primate2 + '_via' + Primate_inter
+
+    affine_model = os.path.join(dir, 'affine_trans_' + dir + '_' + side + '.txt')
     int_lon, int_lat, lon_transform, lat_transform = read_affine(affine_model)
 
     for ind in individuals:
