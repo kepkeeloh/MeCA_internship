@@ -5,7 +5,8 @@ from read_file import *
 from soma import aims
 from Rescale import rescale
 
-def iterate (Primate1, Primate2, side, Primate_inter = None):
+
+def iterate(Primate1, Primate2, side, Primate_inter=None):
     """
     Meant to be used on a database to iterate the reparametrization on a list of individuals of one species to the
     coordinate system of Primate1.
@@ -57,8 +58,8 @@ def iterate (Primate1, Primate2, side, Primate_inter = None):
             newLatT[0][i] = newLat[i]
             newLonT[0][i] = newLon[i]
 
-        outLat = os.path.join(Primate1 + '_to_' + Primate2, Primate1 + '_' + side + 'white_lat_to' + ind + '.gii')
-        outLon = os.path.join(Primate1 + '_to_' + Primate2, Primate1 + '_' + side + 'white_lon_to' + ind + '.gii')
+        outLat = os.path.join(dir, Primate1 + '_' + side + 'white_lat_to' + ind + '.gii')
+        outLon = os.path.join(dir, Primate1 + '_' + side + 'white_lon_to' + ind + '.gii')
 
         r = aims.Writer()
         r.write(newLatT, outLat)
@@ -66,6 +67,11 @@ def iterate (Primate1, Primate2, side, Primate_inter = None):
 
     print('done')
 
+
 if __name__ == '__main__':
-    Primate1, Primate2, side = sys.argv[1:]
-    iterate(Primate1, Primate2, side)
+    if len(sys.argv) == 4:
+        Primate1, Primate2, side = sys.argv[1:]
+        iterate(Primate1, Primate2, side)
+    else:
+        Primate1, Primate2, side, Primate_inter = sys.argv[1:]
+        iterate(Primate1, Primate2, side, Primate_inter)
