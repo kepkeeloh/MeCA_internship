@@ -51,7 +51,7 @@ def Affine_transform(corraxesP1, corraxesP2):
     return long_transform, lat_transform
 
 
-def Affine_composition(Primate1, Primate2, Primate3, side):
+def Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, corrTableP13):
     """
     A new version on Affine_transform that enables to reparametrize the target primate coordinate system through a
     a composition with a third model Primate2 in order to refine the reparametrization with intermediary correspondences
@@ -64,14 +64,6 @@ def Affine_composition(Primate1, Primate2, Primate3, side):
     respective longitudinal and latitudinal intervals which are to be applied on Primate3 long and lat textures
     """
 
-    print('reading models\' informations')
-
-    modelP1F = os.path.join(Primate1, 'model_' + Primate1 + '_' + side + '.txt')
-    modelP2F = os.path.join(Primate2, 'model_' + Primate2 + '_' + side + '.txt')
-    modelP3F = os.path.join(Primate3, 'model_' + Primate3 + '_' + side + '.txt')
-    modelP1 = read_model(modelP1F)
-    modelP2 = read_model(modelP2F)
-    modelP3 = read_model(modelP3F)
     dimRect_P1, poles_lat_P1, longID_P1, latID_P1, sulci_lon_P1, sulci_lat_P1, lon_coor_P1, lat_coor_P1 = modelP1
     dimRect_P2, poles_lat_P2, longID_P2, latID_P2, sulci_lon_P2, sulci_lat_P2, lon_coor_P2, lat_coor_P2 = modelP2
     dimRect_P3, poles_lat_P3, longID_P3, latID_P3, sulci_lon_P3, sulci_lat_P3, lon_coor_P3, lat_coor_P3 = modelP3
@@ -79,29 +71,6 @@ def Affine_composition(Primate1, Primate2, Primate3, side):
     insP1, cinP1 = poles_lat_P1[0], 180 - poles_lat_P1[1]
     insP2, cinP2 = poles_lat_P2[0], 180 - poles_lat_P2[1]
     insP3, cinP3 = poles_lat_P3[0], 180 - poles_lat_P3[1]
-
-    print('reading correspondences\' table')
-
-    name_corrP12 = Primate1 + '_' + Primate2 + '_' + 'corr.txt'
-    if os.path.exists(name_corr):
-        corrTableP12 = read_corr(name_corrP12)
-    else:
-        name_corrP12 = Primate2 + '_' + Primate1 + '_' + 'corr.txt'
-        corrTableP12 = read_corr(name_corrP12)
-
-    name_corrP23 = Primate2 + '_' + Primate3 + '_' + 'corr.txt'
-    if os.path.exists(name_corrP23):
-        corrTableP23 = read_corr(name_corrP23)
-    else:
-        name_corrP23 = Primate3 + '_' + Primate2 + '_' + 'corr.txt'
-        corrTableP23 = read_corr(name_corrP23)
-
-    name_corrP13 = Primate1 + '_' + Primate3 + '_' + 'corr.txt'
-    if os.path.exists(name_corr):
-        corrTableP13 = read_corr(name_corrP13)
-    else:
-        name_corrP13 = Primate3 + '_' + Primate1 + '_' + 'corr.txt'
-        corrTableP13 = read_corr(name_corrP13)
 
     print('rescaling square coordinates to sphere coordinates')
 
@@ -208,7 +177,39 @@ def Affine_composition(Primate1, Primate2, Primate3, side):
 
 def main(Primate1, Primate2, Primate3, side):
 
-    P1toP3 = Affine_composition(Primate1, Primate2, Primate3, side)
+    print('reading models\' informations')
+
+    modelP1F = os.path.join(Primate1, 'model_' + Primate1 + '_' + side + '.txt')
+    modelP2F = os.path.join(Primate2, 'model_' + Primate2 + '_' + side + '.txt')
+    modelP3F = os.path.join(Primate3, 'model_' + Primate3 + '_' + side + '.txt')
+    modelP1 = read_model(modelP1F)
+    modelP2 = read_model(modelP2F)
+    modelP3 = read_model(modelP3F)
+
+    print('reading correspondences\' table')
+
+    name_corrP12 = Primate1 + '_' + Primate2 + '_' + 'corr.txt'
+    if os.path.exists(name_corr):
+        corrTableP12 = read_corr(name_corrP12)
+    else:
+        name_corrP12 = Primate2 + '_' + Primate1 + '_' + 'corr.txt'
+        corrTableP12 = read_corr(name_corrP12)
+
+    name_corrP23 = Primate2 + '_' + Primate3 + '_' + 'corr.txt'
+    if os.path.exists(name_corrP23):
+        corrTableP23 = read_corr(name_corrP23)
+    else:
+        name_corrP23 = Primate3 + '_' + Primate2 + '_' + 'corr.txt'
+        corrTableP23 = read_corr(name_corrP23)
+
+    name_corrP13 = Primate1 + '_' + Primate3 + '_' + 'corr.txt'
+    if os.path.exists(name_corr):
+        corrTableP13 = read_corr(name_corrP13)
+    else:
+        name_corrP13 = Primate3 + '_' + Primate1 + '_' + 'corr.txt'
+        corrTableP13 = read_corr(name_corrP13)
+
+    P1toP3 = Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, corrTableP13)
 
     if not os.path.exists(Primate1 + '_to_' + Primate3 + '_via' + Primate2):
         os.mkdir(Primate1 + '_to_' + Primate3 + '_via' + Primate2)
