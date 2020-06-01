@@ -40,11 +40,11 @@ def Affine_transform(corraxesP1, corraxesP2):
     longP2, latP2 = corraxesP2
 
 
-    for i in range(Nlong + 1):
+    for i in range(Nlong - 1):
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
         long_transform[i][1] = longP1[i] - longP2[i] * long_transform[i][0]
 
-    for i in range(Nlat + 1):
+    for i in range(Nlat - 1):
         lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[i])
         lat_transform[i][1] = latP1[i] - latP2[i] * lat_transform[i][0]
 
@@ -144,36 +144,37 @@ def Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, co
             j = 0
             while sulciP2[0][long_corrP12[i][1]] >= inv_affine(P2toP3[0][j], longP23[j+1]):
                 j += 1
-            longP13.append(sulciP1[0][long_corrP12[i][1]])
-            longP31.append(inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
+            longP13=np.append(longP13,sulciP1[0][long_corrP12[i][1]])
+            longP31=np.append(longP31,inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
     for i in range(Ncorr_latP12):
         if corrTableP12['lat_' + Primate1][i] not in corrTableP13['lat_' + Primate1]:
             j = 0
             while sulciP2[1][lat_corrP12[i][1]] >= inv_affine(P2toP3[1][j], latP23[j+1]):
                 j += 1
-            latP13.append(sulciP1[0][lat_corrP12[i][1]])
-            latP31.append(inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
+            latP13=np.append(latP13,sulciP1[0][lat_corrP12[i][1]])
+            latP31=np.append(latP31,inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
 
     for i in range(Ncorr_lonP23):
         if corrTableP23['lon_' + Primate3][i] not in corrTableP13['lon_' + Primate3]:
             j = 0
             while sulciP2[0][long_corrP23[i][0]] >= longP12[j+1]:
                 j += 1
-            longP13.append(P1toP2[0][j][0]*sulciP2[0][long_corrP23[i][0]]+P1toP2[0][j][1])
-            longP31.append(sulciP3[0][long_corrP23[i][1]])
+            longP13=np.append(longP13,P1toP2[0][j][0]*sulciP2[0][long_corrP23[i][0]]+P1toP2[0][j][1])
+            longP31=np.append(longP31,sulciP3[0][long_corrP23[i][1]])
     for i in range(Ncorr_latP23):
         if corrTableP23['lat_' + Primate3][i] not in corrTableP13['lat_' + Primate3]:
             j = 0
             while sulciP2[1][lat_corrP23[i][0]] >= latP12[j+1]:
                 j += 1
-            latP13.append(P1toP2[1][j][0]*sulciP2[1][lat_corrP23[i][0]]+P1toP2[1][j][1])
-            latP31.append(sulciP3[1][lat_corrP23[i][1]])
+            latP13=np.append(latP13,P1toP2[1][j][0]*sulciP2[1][lat_corrP23[i][0]]+P1toP2[1][j][1])
+            latP31=np.append(latP31,sulciP3[1][lat_corrP23[i][1]])
 
     longP13, latP13, longP31, latP31 = np.sort(longP13), np.sort(latP13), np.sort(longP31), np.sort(latP31)
 
-    P1toP3 = Affine_transform([longP13, latP13], [longP31, latP31])
+    long_transform, lat_transform = Affine_transform([longP13, latP13], [longP31, latP31])
+    
 
-    return P1toP3
+    return longP31, latP31, long_transform, lat_transform
 
 def main(Primate1, Primate2, Primate3, side):
 
@@ -189,7 +190,7 @@ def main(Primate1, Primate2, Primate3, side):
     print('reading correspondences\' table')
 
     name_corrP12 = Primate1 + '_' + Primate2 + '_' + 'corr.txt'
-    if os.path.exists(name_corr):
+    if os.path.exists(name_corrP12):
         corrTableP12 = read_corr(name_corrP12)
     else:
         name_corrP12 = Primate2 + '_' + Primate1 + '_' + 'corr.txt'
@@ -203,7 +204,7 @@ def main(Primate1, Primate2, Primate3, side):
         corrTableP23 = read_corr(name_corrP23)
 
     name_corrP13 = Primate1 + '_' + Primate3 + '_' + 'corr.txt'
-    if os.path.exists(name_corr):
+    if os.path.exists(name_corrP13):
         corrTableP13 = read_corr(name_corrP13)
     else:
         name_corrP13 = Primate3 + '_' + Primate1 + '_' + 'corr.txt'
@@ -231,7 +232,7 @@ def main(Primate1, Primate2, Primate3, side):
 
     file.write('long_transform:')
     for i in range(len(P1toP3[2]) - 1):
-        f2.write(str(P1toP3[2][i][0]) + ' ' + str(P1toP3[2][i][1]) + ',')
+        file.write(str(P1toP3[2][i][0]) + ' ' + str(P1toP3[2][i][1]) + ',')
     file.write(str(P1toP3[2][-1][0]) + ' ' + str(P1toP3[2][-1][1]) + '\n')
 
     file.write('lat_transform:')
