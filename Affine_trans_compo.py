@@ -18,12 +18,12 @@ def inv_affine(param, y):
 
 def Affine_transform(corraxesP1, corraxesP2):
     """
-    Given the coordinates of the sulcal lines on the sphere (i.e. cortical surface) for each species (Primate1 and
+    Given the corresponding coordinates of the axes on the sphere (i.e. cortical surface) for each species (Primate1 and
      Primate2), computes and returns the affine transformations on each interval between the corresponding axes
      for longitudinal and latitudinal sulci from Primate1 to Primate2 (i.e. meant to modify the Primate2's coordinate's
      system)
     :param corraxesP1: a list of two lists of floats, respectively, the coordinates of the longitudinal and the
-     latitudinal sulci for Primate1 on the sphere which define the intervals (i.e. have a correspondence)
+     latitudinal axes for Primate1 on the sphere which define the intervals (i.e. have a correspondence)
     :param corraxesP2: same thing as corraxesP1 for Primate2
     (corraxesP1[i] and corraxesP2[i] must have same length for i=0,1)
     :return: the two lists of affine transformations under the form [a,b] for y = ax+b for the respective longitudinal
@@ -145,36 +145,50 @@ def Affine_composition(modelP1, modelP2, modelP3, corrTableP12, corrTableP23, co
     latP31 = np.sort(np.concatenate(([insP3], sulciP3[1][lat_corrP13[:, 1]], [cinP3])))
 
     for i in range(Ncorr_lonP12):
-        if corrTableP12['lon_' + Primate1][i] not in corrTableP13['lon_' + Primate1]:
+        if sulci_lon_P1[corrTableP12['lon_' + Primate1][i]] not in [sulci_lon_P1[j]
+                                                                    for j in corrTableP13['lon_' + Primate1]]:
+            print(corrTableP12['lon_' + Primate1][i])
             j = 0
             while sulciP2[0][long_corrP12[i][1]] >= longP23[j + 1]:
                 j += 1
-            longP13 = np.append(longP13, sulciP1[0][long_corrP12[i][1]])
+            longP13 = np.append(longP13, sulciP1[0][long_corrP12[i][0]])
             longP31 = np.append(longP31, inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
+            print(sulciP1[0][long_corrP12[i][0]], inv_affine(P2toP3[0][j], sulciP2[0][long_corrP12[i][1]]))
     for i in range(Ncorr_latP12):
-        if corrTableP12['lat_' + Primate1][i] not in corrTableP13['lat_' + Primate1]:
+        if sulci_lat_P1[corrTableP12['lat_' + Primate1][i]] not in [sulci_lat_P1[j]
+                                                                    for j in corrTableP13['lat_' + Primate1]]:
+            print(corrTableP12['lat_' + Primate1][i])
             j = 0
             while sulciP2[1][lat_corrP12[i][1]] >= latP23[j + 1]:
                 j += 1
-            latP13 = np.append(latP13, sulciP1[1][lat_corrP12[i][1]])
+            latP13 = np.append(latP13, sulciP1[1][lat_corrP12[i][0]])
             latP31 = np.append(latP31, inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
+            print(sulciP1[1][lat_corrP12[i][0]], inv_affine(P2toP3[1][j], sulciP2[1][lat_corrP12[i][1]]))
 
     for i in range(Ncorr_lonP23):
-        if corrTableP23['lon_' + Primate3][i] not in corrTableP13['lon_' + Primate3]:
+        if sulci_lon_P3[corrTableP23['lon_' + Primate3][i]] not in [sulci_lon_P3[j]
+                                                                    for j in corrTableP13['lon_' + Primate3]]:
+            print(corrTableP23['lon_' + Primate3][i])
             j = 0
-            while sulciP2[0][long_corrP23[i][0]] >= longP12[j + 1]:
+            while sulciP2[0][long_corrP23[i][0]] >= longP21[j + 1]:
                 j += 1
             longP13 = np.append(longP13, P1toP2[0][j][0] * sulciP2[0][long_corrP23[i][0]] + P1toP2[0][j][1])
             longP31 = np.append(longP31, sulciP3[0][long_corrP23[i][1]])
+            print(P1toP2[0][j][0] * sulciP2[0][long_corrP23[i][0]] + P1toP2[0][j][1], sulciP3[0][long_corrP23[i][1]])
     for i in range(Ncorr_latP23):
-        if corrTableP23['lat_' + Primate3][i] not in corrTableP13['lat_' + Primate3]:
+        if sulci_lat_P3[corrTableP23['lat_' + Primate3][i]] not in [sulci_lat_P3[j]
+                                                                    for j in corrTableP13['lat_' + Primate3]]:
+            print(corrTableP23['lat_' + Primate3][i])
             j = 0
-            while sulciP2[1][lat_corrP23[i][0]] >= latP12[j + 1]:
+            while sulciP2[1][lat_corrP23[i][0]] >= latP21[j + 1]:
                 j += 1
             latP13 = np.append(latP13, P1toP2[1][j][0] * sulciP2[1][lat_corrP23[i][0]] + P1toP2[1][j][1])
             latP31 = np.append(latP31, sulciP3[1][lat_corrP23[i][1]])
+            print(P1toP2[1][j][0] * sulciP2[1][lat_corrP23[i][0]] + P1toP2[1][j][1], sulciP3[1][lat_corrP23[i][1]])
 
     longP13, latP13, longP31, latP31 = np.sort(longP13), np.sort(latP13), np.sort(longP31), np.sort(latP31)
+
+    print(longP13, latP13)
 
     long_transform, lat_transform = Affine_transform([longP13, latP13], [longP31, latP31])
 
