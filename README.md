@@ -19,9 +19,9 @@ This code is called by the other ones and has no use on its own.
 * **PrimateToPrimate.py** was the first version of the code and can be ignored. It is however functional. It computes the affine
 transformations and use them to rescale the corresponding longitudes and latitudes all at once.
 * **Affine_transformations.py** Given two models and a correspondences text file, it returns the two text files of the affine transformations
-from one primate to the other and the other way around.
+from one primate to the other and the other way around. It must be called by 'Affine_transformations.py 'speciesA' 'speciesB' 'side'' (the order of species A and speciesB does not matter, 'side' can be 'L' or 'R')
 * **Rescale.py** uses the affine transformations returned in the text files to rescale the longitude and latitude textures of 
-the corresponding primate (the second one in the input parameters)
+the corresponding primate. It must be called by 'Rescale.py PrimateA' 'PrimateB' 'side'' (the order of PrimateA and ¨PrimateB matters as it will rescale speciesB textures to match soeciesA). However it does not work with the database format, hence files will need to be renamed to match the affine transformations files to rescale individual textures.
 * **Affine_trans_compo.py** is a more sophisticated version of Affine_transformations.py as it uses an intermediary model to compute
 the affine transformations. Hence it needs three models and three correpondences text files as inputs. For instance, it can help
 reparameterizing the macaque's cortical mesh thanks to the putative sulci correspondences between the human and the macaque, the
