@@ -27,6 +27,8 @@ the affine transformations. Hence it needs three models and two correpondences t
 reparameterizing the macaque's cortical mesh thanks to the putative sulci correspondences between the human and the macaque, the
 macaque and the chimpanzee and the chimpanzee and the human.
 * **Iterate.py** enables to rescale the longitude and latitude textures of all individuals of a model, in a Database that has the following shape:
+![database_format](https://user-images.githubusercontent.com/64405156/84280310-6ab4b480-ab37-11ea-93ad-bc45a839fa86.png)
+where speciesA, speciesB, speciesC are for instance 'macaque', 'chimp' or 'human' and ind_a can be 'cerimed_cesar' or any other individual of speciesA, or even 'average_macaque'. The examples are written for the left hemisphere but it suffies to replace 'L' with 'R' in the files' names to obtain the right hemisphere files. 
 
 
 
