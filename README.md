@@ -30,6 +30,8 @@ macaque and the chimpanzee and the chimpanzee and the human.
 ![database_format](https://user-images.githubusercontent.com/64405156/84280310-6ab4b480-ab37-11ea-93ad-bc45a839fa86.png)
 where speciesA, speciesB, speciesC are for instance 'macaque', 'chimp' or 'human' and ind_a can be 'cerimed_cesar' or any other individual of speciesA, or even 'average_macaque'. The examples are written for the left hemisphere but it suffies to replace 'L' with 'R' in the files' names to obtain the right hemisphere files. 
 
+The directories for the different species are necessary and need to be complete, as well as the correspondence text files, however all other directories and files are created by the code if used in the right order (Affine_transformations.py or Affine_trans_compo.py before Iterate.py).
+
 
 
 
