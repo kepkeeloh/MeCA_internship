@@ -23,7 +23,7 @@ from one primate to the other and the other way around.
 * **Rescale.py** uses the affine transformations returned in the text files to rescale the longitude and latitude textures of 
 the corresponding primate (the second one in the input parameters)
 * **Affine_trans_compo.py** is a more sophisticated version of Affine_transformations.py as it uses an intermediary model to compute
-the affine transformations. Hence it needs three models and two correpondences text files as inputs. For instance, it can help
+the affine transformations. Hence it needs three models and three correpondences text files as inputs. For instance, it can help
 reparameterizing the macaque's cortical mesh thanks to the putative sulci correspondences between the human and the macaque, the
 macaque and the chimpanzee and the chimpanzee and the human.
 * **Iterate.py** enables to rescale the longitude and latitude textures of all individuals of a model, in a Database that has the following shape:
