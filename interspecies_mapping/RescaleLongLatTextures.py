@@ -1,8 +1,10 @@
+#Edited from jeanne's rescale.py
+
+import os
 import numpy as np
 import sys
 from soma import aims
 from read_file import *
-
 
 def rescale(texture, affine, intervals):
     """
@@ -32,34 +34,40 @@ def rescale(texture, affine, intervals):
 #
 # main function
 #
-# python Rescale.py Primate1 Primate2 side
+# python RescaleLongLatTextures.py affine_transformation_P1_to_P2 LonTex_P2 LatTex_P2
 #
 ####################################################################
 
-def main(Primate1, Primate2, side):
+def main(affine_transformation, LonTex, LatTex):
     """
-    Main function that uses the text file returned by the Affine_transformations.py code in order to rescale the
-    Primate2's texture so we can map Primate1's textures onto Primate1's brain surface.
-    :param Primate1: string - name of Primate1
-    :param Primate2: string - name of Primate2
-    :param side: string - hemisphere 'L' or 'R'
-    :return: the rescaled Primate2's longitudinal and latitudinal textures
+    Main function that uses the affine_transformation text file (P1_to_P2) to rescale the
+    P2's texture so we can map P1's textures onto P2's brain surface.
+    :param affine_transformation: transformation from P1 to P2
+    :param longTex: P2 long texture that you want to rescale to P1
+    :param latTex: P2 lat texture that you want to rescale to P1
+    :return: the rescaled P2's longitudinal and latitudinal textures
     """
+    
+    outputPath = os.path.split(os.path.abspath(affine_transformation))[0]
+    side = os.path.split(os.path.abspath(affine_transformation))[1].split("_")[5].split(".")[0]
+    P1 = (os.path.split(affine_transformation)[1].split("_")[2])
+    P2 = (os.path.split(affine_transformation)[1].split("_")[4])
 
-    nameLon = Primate2 + '_' + side + 'white_lon.gii'
-    nameLat = Primate2 + '_' + side + 'white_lat.gii'
+    print(outputPath)
+    print(side)
+    print(P2)
 
     print('reading coordinates')
 
     r = aims.Reader()
-    texLatF = r.read(nameLat)
-    texLonF = r.read(nameLon)
+    texLatF = r.read(LatTex)
+    texLonF = r.read(LonTex)
     texLat = np.array(texLatF[0])
     texLon = np.array(texLonF[0])
 
     print('reading affine transformations')
 
-    affine_model = 'affine_trans_' + Primate1 + '_to_' + Primate2 + '_' + side + '.txt'
+    affine_model = affine_transformation
     int_lon, int_lat, lon_transform, lat_transform = read_affine(affine_model)
 
     print('processing longitude')
@@ -80,8 +88,8 @@ def main(Primate1, Primate2, side):
         newLatT[0][i] = newLat[i]
         newLonT[0][i] = newLon[i]
 
-    outLat = Primate1 + '_' + side + 'white_lat_to' + Primate2 + '.gii'
-    outLon = Primate1 + '_' + side + 'white_lon_to' + Primate2 + '.gii'
+    outLat = os.path.join(outputPath, P1 + '_to_' + P2 + '_lat_' + side + '.gii')
+    outLon = os.path.join(outputPath, P1 + '_to_' + P2 + '_lon_' + side + '.gii')
 
     r = aims.Writer()
     r.write(newLatT, outLat)
@@ -89,5 +97,5 @@ def main(Primate1, Primate2, side):
     print('done')
 
 if __name__ == '__main__':
-    Primate1, Primate2, side = sys.argv[1:]
-    main(Primate1, Primate2, side)
+    affine_transformation, LonTex, LatTex = sys.argv[1:]
+    main(affine_transformation, LonTex, LatTex)
