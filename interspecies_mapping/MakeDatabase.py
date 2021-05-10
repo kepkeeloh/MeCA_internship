@@ -14,9 +14,9 @@ import sys
 from soma import aims
 
 WORKDIR = "/hpc/meca/users/loh.k/interspecies_hiphop"
-BVDIR = "/hpc/meca/data/Macaques/BV_macaque_db"
-CENTER = "PRIME_DE"
-SPECIES = "macaque"
+BVDIR = "/hpc/meca/data/Baboons/BV_Baboons"
+CENTER = "Adrien"
+SPECIES = "baboon"
 
 SubNameList = [i for i in os.listdir(BVDIR + "/" + CENTER) if '.' not in i]
 #print(len(SubNameList))
@@ -27,8 +27,8 @@ os.system('mkdir ' + (WORKDIR + "/" + SPECIES))
 
 for s in range(len(SubNameList)):
 
-    #SubName = (SubNameList[s].split("_")[4]) #baboons
-    SubName = (SubNameList[s]) #macaques
+    SubName = (SubNameList[s].split("_")[4]) #baboons
+    #SubName = (SubNameList[s]) #macaques
 
     # Filenames to copy
     LwhiteMesh = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
