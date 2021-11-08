@@ -34,11 +34,11 @@ def rescale(texture, affine, intervals):
 #
 # main function
 #
-# python RescaleLongLatTextures.py affine_transformation_P1_to_P2 LonTex_P2 LatTex_P2
+# python RescaleLongLatTextures.py affine_transformation_P1_to_P2 P1 P2 LonTex_P2 LatTex_P2
 #
 ####################################################################
 
-def main(affine_transformation, LonTex, LatTex):
+def main(affine_transformation, P1, P2, side, LonTex, LatTex):
     """
     Main function that uses the affine_transformation text file (P1_to_P2) to rescale the
     P2's texture so we can map P1's textures onto P2's brain surface.
@@ -49,9 +49,9 @@ def main(affine_transformation, LonTex, LatTex):
     """
     
     outputPath = os.path.split(os.path.abspath(affine_transformation))[0]
-    side = os.path.split(os.path.abspath(affine_transformation))[1].split("_")[5].split(".")[0]
-    P1 = (os.path.split(affine_transformation)[1].split("_")[2])
-    P2 = (os.path.split(affine_transformation)[1].split("_")[4])
+    #side = os.path.split(os.path.abspath(affine_transformation))[1].split("_")[5].split(".")[0]
+    #P1 = (os.path.split(affine_transformation)[1].split("_")[2])
+    #P2 = (os.path.split(affine_transformation)[1].split("_")[4])
 
     print(outputPath)
     print(side)
@@ -97,5 +97,5 @@ def main(affine_transformation, LonTex, LatTex):
     print('done')
 
 if __name__ == '__main__':
-    affine_transformation, LonTex, LatTex = sys.argv[1:]
-    main(affine_transformation, LonTex, LatTex)
+    affine_transformation, P1, P2, side, LonTex, LatTex = sys.argv[1:]
+    main(affine_transformation, P1, P2, side, LonTex, LatTex)
