@@ -1,8 +1,8 @@
-#Last Updated: 21 April 2021
+#Last Updated: 08 Nov 2021
 
 #Script for making database to run Jeanne scripts
 #Create directory for each species, and subject
-#Copy fine white, long, lat meshes from each subject in the BV database
+#Copy fine white, long, lat, spherical, remshed, meshes from each subject in the BV database
 
 #IMPORTANT: Change directory names and subject names according to species
 #Command: /hpc/meca/users/auzias/brainvisa_4.5.0_patch_bugfix_2020_01_15/bin/python MakeDatabase.py 
@@ -49,6 +49,18 @@ for s in range(len(SubNameList)):
     RwhiteLat = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
             + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
             + "surface_analysis/" + SubNameList[s] + "_Rwhite_lat.gii")
+    L_remesh = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Lwhite_remeshed_hiphop.gii")
+    R_remesh = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Rwhite_remeshed_hiphop.gii")
+    L_sphere = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Lwhite_spherical.gii")
+    R_sphere = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Rwhite_spherical.gii")
 
     SubjOutDir = WORKDIR + "/" + SPECIES + "/" + SubName + "_" + SPECIES
 
@@ -59,6 +71,10 @@ for s in range(len(SubNameList)):
     os.system("cp " + RwhiteLon + " " + SubjOutDir + "/" + SubName + "_Rwhite_lon.gii")
     os.system("cp " + LwhiteLat + " " + SubjOutDir + "/" + SubName + "_Lwhite_lat.gii")
     os.system("cp " + RwhiteLat + " " + SubjOutDir + "/" + SubName + "_Rwhite_lat.gii")
+    os.system("cp " + L_remesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_remeshed_hiphop.gii")
+    os.system("cp " + R_remesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_remeshed_hiphop.gii")
+    os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_spherical.gii")
+    os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_spherical.gii")
 
     print("Files copied for: " + SubNameList[s])
 
