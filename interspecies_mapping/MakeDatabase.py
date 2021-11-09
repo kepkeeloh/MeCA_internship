@@ -14,12 +14,20 @@ import sys
 from soma import aims
 
 WORKDIR = "/hpc/meca/users/loh.k/interspecies_hiphop"
-BVDIR = "/hpc/meca/data/Baboons/BV_Baboons"
-CENTER = "Adrien"
-SPECIES = "baboon"
+#BVDIR = "/hpc/meca/data/Baboons/BV_Baboons"
+#CENTER = "Adrien"
+#SPECIES = "baboon"
+
+#BVDIR = "/hpc/meca/data/Macaques/BV_macaque_db"
+#CENTER = "PRIME_DE"
+#SPECIES = "macaque"
+
+BVDIR = "/hpc/meca/data/Chimpanzees/ChimpsFromCAT12"
+CENTER = "subject3T"
+SPECIES = "chimp"
 
 SubNameList = [i for i in os.listdir(BVDIR + "/" + CENTER) if '.' not in i]
-#print(len(SubNameList))
+print(len(SubNameList))
 
 # Make species output directory
 
@@ -27,8 +35,8 @@ os.system('mkdir ' + (WORKDIR + "/" + SPECIES))
 
 for s in range(len(SubNameList)):
 
-    SubName = (SubNameList[s].split("_")[4]) #baboons
-    #SubName = (SubNameList[s]) #macaques
+    #SubName = (SubNameList[s].split("_")[4]) #baboons
+    SubName = (SubNameList[s]) #macaques
 
     # Filenames to copy
     LwhiteMesh = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
@@ -61,8 +69,14 @@ for s in range(len(SubNameList)):
     R_sphere = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
             + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
             + "surface_analysis/" + SubNameList[s] + "_Rwhite_spherical.gii")
+    L_DPF = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Lwhite_DPF.gii")
+    R_DPF = (BVDIR + "/" + CENTER + "/" + SubNameList[s] 
+            + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/"
+            + "surface_analysis/" + SubNameList[s] + "_Rwhite_DPF.gii")
 
-    SubjOutDir = WORKDIR + "/" + SPECIES + "/" + SubName + "_" + SPECIES
+    SubjOutDir = WORKDIR + "/" + SPECIES + "/" + SubName
 
     os.system("mkdir " + SubjOutDir)
     os.system("cp " + LwhiteMesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_fine.gii")
@@ -75,6 +89,8 @@ for s in range(len(SubNameList)):
     os.system("cp " + R_remesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_remeshed_hiphop.gii")
     os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_spherical.gii")
     os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_spherical.gii")
+    os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_DPF.gii")
+    os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_DPF.gii")
 
     print("Files copied for: " + SubNameList[s])
 
