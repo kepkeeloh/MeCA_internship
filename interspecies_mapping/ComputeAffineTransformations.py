@@ -79,16 +79,32 @@ def Affine_Transform(sulciP1, sulciP2, long_corr, lat_corr, latP1, latP2):
     lat_transform = np.zeros((Nlat + 1, 2))
 
     # make the lists of the axes that have a correspondence (and therefore define the intervals)
-    longP1 = np.sort(np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360])))
+#    longP1 = np.sort(np.concatenate(([0], sulciP1[0][long_corr[:, 0]], [360])))
+    longP1 = np.sort(np.concatenate((sulciP1[0][long_corr[:, 0]], [360])))    
     latP1 = np.sort(np.concatenate(([insP1], sulciP1[1][lat_corr[:, 0]], [cinP1])))
-    longP2 = np.sort(np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360])))
+#   longP2 = np.sort(np.concatenate(([0], sulciP2[0][long_corr[:, 1]], [360])))
+    longP2 = np.sort(np.concatenate((sulciP2[0][long_corr[:, 1]], [360])))
     latP2 = np.sort(np.concatenate(([insP2], sulciP2[1][lat_corr[:, 1]], [cinP2])))
+    
+    #print insP2, cinP2
+    
+    #print 'lat_corr[:, 1]=', lat_corr[:, 1]
+    #print 'latP2=', latP2
+    #print 'Nlat=', Nlat
+    #print 'sulciP2[1]=', sulciP2[1]
 
-    for i in range(Nlong + 1):
+#    for i in range(Nlong+1):   
+    for i in range(Nlong):
+        #print 'i=', i   
+        #print 'lon[i+1]=', longP2[i + 1]
+        #print 'lon[i]=', longP2[i]        
         long_transform[i][0] = (longP1[i + 1] - longP1[i]) / (longP2[i + 1] - longP2[i])
         long_transform[i][1] = longP1[i] - longP2[i] * long_transform[i][0]
 
     for i in range(Nlat + 1):
+        #print 'i=', i   
+        #print '\t latP2[i]=', latP2[i]
+        #print '\t latP2[i + 1]=', latP2[i + 1]
         lat_transform[i][0] = (latP1[i + 1] - latP1[i]) / (latP2[i + 1] - latP2[i])
         lat_transform[i][1] = latP1[i] - latP2[i] * lat_transform[i][0]
 
