@@ -18,13 +18,13 @@ WORKDIR = "/hpc/meca/users/loh.k/interspecies_hiphop"
 #CENTER = "Adrien"
 #SPECIES = "baboon"
 
-#BVDIR = "/hpc/meca/data/Macaques/BV_macaque_db"
-#CENTER = "PRIME_DE"
-#SPECIES = "macaque"
+BVDIR = "/hpc/meca/data/Macaques/BV_macaque_db"
+CENTER = "PRIME_DE"
+SPECIES = "macaque"
 
-BVDIR = "/hpc/meca/data/Chimpanzees/ChimpsFromCAT12"
-CENTER = "subject3T"
-SPECIES = "chimp"
+#BVDIR = "/hpc/meca/data/Chimpanzees/ChimpsFromCAT12"
+#CENTER = "subject3T"
+#SPECIES = "chimp"
 
 SubNameList = [i for i in os.listdir(BVDIR + "/" + CENTER) if '.' not in i]
 print(len(SubNameList))
@@ -77,21 +77,23 @@ for s in range(len(SubNameList)):
             + "surface_analysis/" + SubNameList[s] + "_Rwhite_DPF.gii")
 
     SubjOutDir = WORKDIR + "/" + SPECIES + "/" + SubName
+    if os.path.exists(R_remesh):
+        os.system("mkdir " + SubjOutDir)
+        os.system("cp " + LwhiteMesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_fine.gii")
+        os.system("cp " + RwhiteMesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_fine.gii")
+        os.system("cp " + LwhiteLon + " " + SubjOutDir + "/" + SubName + "_Lwhite_lon.gii")
+        os.system("cp " + RwhiteLon + " " + SubjOutDir + "/" + SubName + "_Rwhite_lon.gii")
+        os.system("cp " + LwhiteLat + " " + SubjOutDir + "/" + SubName + "_Lwhite_lat.gii")
+        os.system("cp " + RwhiteLat + " " + SubjOutDir + "/" + SubName + "_Rwhite_lat.gii")
+        os.system("cp " + L_remesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_remeshed_hiphop.gii")
+        os.system("cp " + R_remesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_remeshed_hiphop.gii")
+        os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_spherical.gii")
+        os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_spherical.gii")
+        os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_DPF.gii")
+        os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_DPF.gii")
+        print("Files copied for: " + SubNameList[s])
+    else:
+        print("The file:" + R_remesh + " does not exist")
 
-    os.system("mkdir " + SubjOutDir)
-    os.system("cp " + LwhiteMesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_fine.gii")
-    os.system("cp " + RwhiteMesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_fine.gii")
-    os.system("cp " + LwhiteLon + " " + SubjOutDir + "/" + SubName + "_Lwhite_lon.gii")
-    os.system("cp " + RwhiteLon + " " + SubjOutDir + "/" + SubName + "_Rwhite_lon.gii")
-    os.system("cp " + LwhiteLat + " " + SubjOutDir + "/" + SubName + "_Lwhite_lat.gii")
-    os.system("cp " + RwhiteLat + " " + SubjOutDir + "/" + SubName + "_Rwhite_lat.gii")
-    os.system("cp " + L_remesh + " " + SubjOutDir + "/" + SubName + "_Lwhite_remeshed_hiphop.gii")
-    os.system("cp " + R_remesh + " " + SubjOutDir + "/" + SubName + "_Rwhite_remeshed_hiphop.gii")
-    os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_spherical.gii")
-    os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_spherical.gii")
-    os.system("cp " + L_sphere + " " + SubjOutDir + "/" + SubName + "_Lwhite_DPF.gii")
-    os.system("cp " + R_sphere + " " + SubjOutDir + "/" + SubName + "_Rwhite_DPF.gii")
-
-    print("Files copied for: " + SubNameList[s])
 
 
